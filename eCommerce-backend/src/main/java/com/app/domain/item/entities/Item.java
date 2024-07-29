@@ -5,6 +5,7 @@ import com.app.global.entities.AuditableEntity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static com.app.global.constants.UserInputConstants.PRICE_PRECISION;
 import static com.app.global.constants.UserInputConstants.PRICE_SCALE;
@@ -31,6 +32,9 @@ public class Item extends AuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id")
     private Member seller;
+
+    @OneToMany(mappedBy = "item")
+    private List<ItemMedia> media;
 
     protected Item() {}
 
@@ -87,5 +91,13 @@ public class Item extends AuditableEntity {
 
     public void setSeller(Member seller) {
         this.seller = seller;
+    }
+
+    public List<ItemMedia> getMedia() {
+        return media;
+    }
+
+    public void setMedia(List<ItemMedia> media) {
+        this.media = media;
     }
 }
