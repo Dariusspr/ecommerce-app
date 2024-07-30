@@ -7,8 +7,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static com.app.global.constants.UserInputConstants.PRICE_PRECISION;
-import static com.app.global.constants.UserInputConstants.PRICE_SCALE;
+import static com.app.global.constants.UserInputConstants.*;
 
 @Entity
 @Table(name = "item")
@@ -19,7 +18,7 @@ public class Item extends AuditableEntity {
     @Column(name = "item_id")
     private Long id;
 
-    @Column(name = "item_title", nullable = false)
+    @Column(name = "item_title", nullable = false, length = TITLE_LENGTH)
     private String title;
 
     @Column(name = "item_price", nullable = false, precision = PRICE_PRECISION, scale = PRICE_SCALE)
@@ -35,6 +34,10 @@ public class Item extends AuditableEntity {
 
     @OneToMany(mappedBy = "item")
     private List<ItemMedia> media;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     protected Item() {}
 
@@ -99,5 +102,13 @@ public class Item extends AuditableEntity {
 
     public void setMedia(List<ItemMedia> media) {
         this.media = media;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }
