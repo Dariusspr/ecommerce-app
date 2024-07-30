@@ -18,4 +18,10 @@ public class UserInputConstants {
     public static final String DEFAULT_MEMBER_PROFILE_TITLE = "default-profile";
     public static final String DEFAULT_MEMBER_PROFILE_URL = "default-member-url";
     public static final FileFormat DEFAULT_MEMBER_PROFILE_FORMAT = FileFormat.PNG;
+
+    public static final int RATING_MIN = 1;
+    public static final int RATING_MAX = 10;
+
+    public static final int COMMENT_CONTENT_LENGTH_MIN = 3;
+
 }
