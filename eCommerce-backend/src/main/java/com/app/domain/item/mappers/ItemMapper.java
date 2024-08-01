@@ -24,7 +24,9 @@ public class ItemMapper {
                 item.getPrice(),
                 item.getDescription(),
                 toMemberSummaryDTO(item.getSeller()), mediaDTOList,
-                item.getCategory().getTitle()
+                item.getCategory().getTitle(),
+                item.getCreatedDate(),
+                item.getLastModifiedDate()
         );
     }
 }
