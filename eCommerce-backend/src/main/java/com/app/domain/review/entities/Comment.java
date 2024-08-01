@@ -3,6 +3,8 @@ package com.app.domain.review.entities;
 import com.app.domain.member.entities.Member;
 import com.app.global.entities.AuditableEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
@@ -20,13 +22,15 @@ public class Comment extends AuditableEntity {
     @Column(name = "comment_id")
     private Long id;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id")
     private Member author;
 
     @Lob
-    @Column(name = "comment_content", nullable = false)
+    @NotBlank
     @Size(min = COMMENT_CONTENT_LENGTH_MIN)
+    @Column(name = "comment_content", nullable = false)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)

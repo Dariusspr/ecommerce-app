@@ -2,11 +2,13 @@ package com.app.domain.review.entities;
 
 import com.app.domain.member.entities.Member;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "member_review")
 public class MemberReview extends Review{
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id")
     private Member member;

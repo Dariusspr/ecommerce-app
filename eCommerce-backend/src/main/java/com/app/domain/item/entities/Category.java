@@ -1,11 +1,14 @@
 package com.app.domain.item.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.app.global.constants.UserInputConstants.TITLE_LENGTH;
+import static com.app.global.constants.UserInputConstants.*;
 
 @Entity
 @Table(name = "category")
@@ -16,7 +19,9 @@ public class Category {
     @Column(name = "category_id")
     private Long id;
 
-    @Column(name = "category_title", unique = true, nullable = false, length = TITLE_LENGTH)
+    @NotBlank
+    @Size(min = TITLE_LENGTH_MIN, max = TITLE_LENGTH_MAX)
+    @Column(name = "category_title", unique = true, nullable = false, length = TITLE_LENGTH_MAX)
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)

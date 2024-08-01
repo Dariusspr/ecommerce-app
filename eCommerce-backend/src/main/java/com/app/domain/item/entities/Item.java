@@ -3,6 +3,9 @@ package com.app.domain.item.entities;
 import com.app.domain.member.entities.Member;
 import com.app.global.entities.AuditableEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,9 +21,12 @@ public class Item extends AuditableEntity {
     @Column(name = "item_id")
     private Long id;
 
-    @Column(name = "item_title", nullable = false, length = TITLE_LENGTH)
+    @NotBlank
+    @Size(min = TITLE_LENGTH_MIN, max = TITLE_LENGTH_MAX)
+    @Column(name = "item_title", nullable = false, length = TITLE_LENGTH_MAX)
     private String title;
 
+    @NotNull
     @Column(name = "item_price", nullable = false, precision = PRICE_PRECISION, scale = PRICE_SCALE)
     private BigDecimal price;
 
@@ -28,6 +34,7 @@ public class Item extends AuditableEntity {
     @Column(name = "item_description")
     private String description;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id")
     private Member seller;

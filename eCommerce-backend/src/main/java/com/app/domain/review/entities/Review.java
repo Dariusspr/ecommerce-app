@@ -5,6 +5,7 @@ import com.app.global.entities.AuditableEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import static com.app.global.constants.UserInputConstants.RATING_MAX;
 import static com.app.global.constants.UserInputConstants.RATING_MIN;
@@ -17,15 +18,18 @@ public abstract class Review extends AuditableEntity {
     @Column(name = "review_id")
     private Long id;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @Column(name = "review_author", nullable = false)
     private Member author;
 
+    @NotNull
     @Min(RATING_MIN)
     @Max(RATING_MAX)
     @Column(name = "review_rating", nullable = false)
     private int rating;
 
+    @NotNull
     @OneToOne(optional = false)
     @JoinColumn(name = "comment_id")
     private Comment comment;

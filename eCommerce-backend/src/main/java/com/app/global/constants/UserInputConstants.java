@@ -9,9 +9,13 @@ public class UserInputConstants {
     public static final int PRICE_PRECISION = 8;
     public static final int PRICE_SCALE = 2;
 
-    public static final int TITLE_LENGTH = 40;
+    public static final int TITLE_LENGTH_MIN = 3;
+    public static final int TITLE_LENGTH_MAX = 40;
 
-    public static final int USERNAME_LENGTH = 30;
+    public static final int USERNAME_LENGTH_MIN = 3;
+    public static final int USERNAME_LENGTH_MAX = 30;
+
+    public static final int PASSWORD_HASHED_LENGTH = 60;
 
     public static final Gender DEFAULT_MEMBER_GENDER = Gender.OTHER;
 

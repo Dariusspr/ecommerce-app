@@ -4,12 +4,11 @@ import com.app.global.entities.AuditableEntity;
 import com.app.global.enums.Gender;
 import com.app.global.vos.Media;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-import static com.app.global.constants.UserInputConstants.DEFAULT_MEMBER_PROFILE_TITLE;
-import static com.app.global.constants.UserInputConstants.DEFAULT_MEMBER_PROFILE_URL;
-import static com.app.global.constants.UserInputConstants.DEFAULT_MEMBER_PROFILE_FORMAT;
-import static com.app.global.constants.UserInputConstants.DEFAULT_MEMBER_GENDER;
-import static com.app.global.constants.UserInputConstants.USERNAME_LENGTH;
+import static com.app.global.constants.UserInputConstants.*;
 
 @Entity
 @Table(name="member")
@@ -20,24 +19,31 @@ public class Member extends AuditableEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(name = "member_username", nullable = false, length = USERNAME_LENGTH, unique = true)
+    @NotBlank
+    @Size(min = USERNAME_LENGTH_MIN, max = USERNAME_LENGTH_MAX)
+    @Column(name = "member_username", nullable = false, length = USERNAME_LENGTH_MAX, unique = true)
     private String username;
 
-    @Column(name = "member_password", nullable = false)
+    @NotBlank
+    @Size(min =  PASSWORD_HASHED_LENGTH, max = PASSWORD_HASHED_LENGTH)
+    @Column(name = "member_password", nullable = false, length = PASSWORD_HASHED_LENGTH)
     private String password;
 
+    @NotBlank
     @Column(name = "member_email", nullable = false)
     private String email;
 
+    @NotNull
     @Column(name = "member_gender", nullable = false)
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @NotNull
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "title", column = @Column(name = "member_profile_title")),
-            @AttributeOverride(name = "url", column = @Column(name = "member_profile_url")),
-            @AttributeOverride(name = "format", column = @Column(name = "member_profile_format")),
+            @AttributeOverride(name = "title", column = @Column(name = "member_profile_title", nullable = false)),
+            @AttributeOverride(name = "url", column = @Column(name = "member_profile_url", nullable = false)),
+            @AttributeOverride(name = "format", column = @Column(name = "member_profile_format", nullable = false)),
     })
     private Media profile;
 
@@ -50,6 +56,15 @@ public class Member extends AuditableEntity {
         this.email = email;
         this.gender = DEFAULT_MEMBER_GENDER;
         this.profile = new Media(DEFAULT_MEMBER_PROFILE_TITLE, DEFAULT_MEMBER_PROFILE_URL, DEFAULT_MEMBER_PROFILE_FORMAT);
+    }
+
+    public Member(Long id, String username, String password, String email, Gender gender, Media profile) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.gender = gender;
+        this.profile = profile;
     }
 
     // AUTO GENERATED
