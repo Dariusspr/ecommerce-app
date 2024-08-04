@@ -57,6 +57,17 @@ public class Category {
         category.setParent(null);
         children.remove(category);
     }
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (!(object instanceof Category category)) return false;
+        return Objects.equals(getTitle(), category.getTitle());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTitle());
+    }
 
     // AUTO GENERATED
 
