@@ -20,7 +20,7 @@ public abstract class Review extends AuditableEntity {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "review_author", nullable = false)
+    @JoinColumn(name = "review_author_id", nullable = false)
     private Member author;
 
     @NotNull
