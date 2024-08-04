@@ -37,10 +37,20 @@ public class Category {
         this.title = title;
     }
 
-    public Category(String title, Category parent, List<Category> children) {
-        this.title = title;
-        this.parent = parent;
-        this.children = children;
+    public void addChild(Category category) {
+        if (category == null) {
+            throw new IllegalArgumentException("'category' is null");
+        }
+        category.setParent(this);
+        children.add(category);
+    }
+
+    public void removeChild(Category category) {
+        if (category == null) {
+            throw new IllegalArgumentException("'category' is null");
+        }
+        category.setParent(null);
+        children.remove(category);
     }
 
     // AUTO GENERATED

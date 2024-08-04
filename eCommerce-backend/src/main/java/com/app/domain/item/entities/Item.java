@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.app.global.constants.UserInputConstants.*;
@@ -40,7 +41,7 @@ public class Item extends AuditableEntity {
     private Member seller;
 
     @OneToMany(mappedBy = "item")
-    private List<ItemMedia> media;
+    private List<ItemMedia> mediaList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -59,6 +60,22 @@ public class Item extends AuditableEntity {
         this.price = price;
         this.description = description;
         this.seller = seller;
+    }
+
+    public void addMedia(ItemMedia media) {
+        if (media == null) {
+            throw new IllegalArgumentException("'media' is null");
+        }
+        media.setItem(this);
+        mediaList.add(media);
+    }
+
+    public void removeMedia(ItemMedia media) {
+        if (media == null) {
+            throw new IllegalArgumentException("'media' is null");
+        }
+        media.setItem(null);
+        mediaList.remove(media);
     }
 
     // AUTO GENERATED
@@ -103,12 +120,12 @@ public class Item extends AuditableEntity {
         this.seller = seller;
     }
 
-    public List<ItemMedia> getMedia() {
-        return media;
+    public List<ItemMedia> getMediaList() {
+        return mediaList;
     }
 
-    public void setMedia(List<ItemMedia> media) {
-        this.media = media;
+    public void setMediaList(List<ItemMedia> media) {
+        this.mediaList = media;
     }
 
     public Category getCategory() {
