@@ -14,7 +14,7 @@ public class ItemMapper {
     }
 
     public static ItemDetailedDTO toItemDetailedDTO(Item item) {
-        List<ItemMediaDTO> mediaDTOList = item.getMedia()
+        List<ItemMediaDTO> mediaDTOList = item.getMediaList()
                 .stream()
                 .map(ItemMediaMapper::toItemMediaDTO)
                 .toList();
