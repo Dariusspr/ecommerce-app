@@ -96,7 +96,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void updateTest_singleCategory_modifyTitle() {
+    void saveTest_singleCategory_modifyTitle() {
         Category category = new RandomCategoryBuilder().create();
         Category returned = categoryService.save(category);
         assertEquals(category, returned);
@@ -191,6 +191,20 @@ public class CategoryServiceTest {
         List<Category> categories = categoryService.findByParentId(category.getId());
 
         assertEquals(children, categories);
+    }
+
+    // DTO methods
+
+    @Test
+    void saveDtoTest_categoryWithParentWithChildren() {
+        Category category = new RandomCategoryBuilder().withParent()
+                .withChildren()
+                .create();
+
+        CategoryDTO returnedCategoryDto = categoryService.saveDto(category);
+
+        CategoryDTO categoryDto = CategoryMapper.toCategoryDTO(category);
+        assertEquals(categoryDto, returnedCategoryDto);
     }
 
     @Test

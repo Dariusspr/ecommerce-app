@@ -25,11 +25,6 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    @Transactional
-    public Category update(Category category) {
-        return save(category);
-    }
-
     public Category findById(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
@@ -47,6 +42,15 @@ public class CategoryService {
     public List<Category> findByParentId(Long id) {
         return categoryRepository.findByParentId(id);
     }
+
+    // DTO methods
+
+    @Transactional
+    public CategoryDTO saveDto(Category category) {
+        Category returned = save(category);
+        return CategoryMapper.toCategoryDTO(returned);
+    }
+
     @Transactional
     public CategoryDTO findDtoByTitle(String title) {
         Category category = findByTitle(title);
@@ -74,4 +78,5 @@ public class CategoryService {
                 .map(CategoryMapper::toCategoryDTO)
                 .toList();
     }
+
 }
