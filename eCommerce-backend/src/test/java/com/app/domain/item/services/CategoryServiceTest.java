@@ -17,8 +17,7 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @SpringBootTest
@@ -32,7 +31,7 @@ public class CategoryServiceTest {
 
 
     @Test
-    void saveTest_singleCategory() {
+    void save_singleCategory() {
         Category category = new RandomCategoryBuilder().create();
 
         Category returnedCategory = categoryService.save(category);
@@ -41,7 +40,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void saveTest_categoryWithParentAndWithNestedChildren() {
+    void save_categoryWithParentAndWithNestedChildren() {
         Category category = new RandomCategoryBuilder()
                 .withParent()
                 .withNestedChildren()
@@ -53,7 +52,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void saveTest_singleCategory_invalidTitle_throwsConstraintViolationException() {
+    void save_singleCategory_invalidTitle_throwsConstraintViolationException() {
         Category category = new RandomCategoryBuilder().create();
         category.setTitle("1");
 
@@ -61,7 +60,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void saveTest_categoryWithParent_invalidTitle_throwsConstraintViolationException() {
+    void save_categoryWithParent_invalidTitle_throwsConstraintViolationException() {
         Category category = new RandomCategoryBuilder()
                 .withParent()
                 .create();
@@ -71,7 +70,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void saveTest_categoryWithChildren_invalidTitle_throwsConstraintViolationException() {
+    void save_categoryWithChildren_invalidTitle_throwsConstraintViolationException() {
         Category category = new RandomCategoryBuilder()
                 .withChildren()
                 .create();
@@ -81,7 +80,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void saveTest_categoryWithChildren_NotUniqueTitle_throwsDataIntegrityViolationException() {
+    void save_categoryWithChildren_NotUniqueTitle_throwsDataIntegrityViolationException() {
         Category category1 = new RandomCategoryBuilder()
                 .withChildren()
                 .create();
@@ -96,7 +95,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void saveTest_singleCategory_modifyTitle() {
+    void save_singleCategory_modifyTitle() {
         Category category = new RandomCategoryBuilder().create();
         Category returned = categoryService.save(category);
         assertEquals(category, returned);
@@ -193,11 +192,43 @@ public class CategoryServiceTest {
         assertEquals(children, categories);
     }
 
+    @Test
+    void deleteById_singleCategory() {
+        Category category = new RandomCategoryBuilder().create();
+        categoryService.save(category);
+        long id = category.getId();
+
+        categoryService.deleteById(id);
+
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.findById(id));
+    }
+
+    @Test
+    void deleteById_categoryWithParentWithNestedChildren() {
+        Category category = new RandomCategoryBuilder()
+                .withParent()
+                .withNestedChildren()
+                .create();
+        categoryService.save(category);
+        long id = category.getId();
+        long parentId = category.getParent().getId();
+        long childId = category.getChildren().getFirst().getId();
+        long nestedChildId = category.getChildren().getFirst().getChildren().getFirst().getId();
+
+        categoryService.deleteById(id);
+
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.findById(id));
+        assertDoesNotThrow(() -> categoryService.findById(parentId));
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.findById(childId));
+        assertThrows(CategoryNotFoundException.class, () -> categoryService.findById(nestedChildId));
+    }
+
     // DTO methods
 
     @Test
-    void saveDtoTest_categoryWithParentWithChildren() {
-        Category category = new RandomCategoryBuilder().withParent()
+    void saveDto_categoryWithParentWithChildren() {
+        Category category = new RandomCategoryBuilder()
+                .withParent()
                 .withChildren()
                 .create();
 

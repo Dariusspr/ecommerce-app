@@ -43,6 +43,11 @@ public class CategoryService {
         return categoryRepository.findByParentId(id);
     }
 
+    public void deleteById(Long id) {
+        Category category = findById(id);
+        categoryRepository.delete(category);
+    }
+
     // DTO methods
 
     @Transactional
