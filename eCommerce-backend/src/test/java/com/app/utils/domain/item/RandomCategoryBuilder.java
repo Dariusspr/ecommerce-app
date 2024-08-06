@@ -5,7 +5,9 @@ import com.app.domain.item.entities.Category;
 import com.app.utils.global.NumberUtils;
 import com.app.utils.global.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MAX;
@@ -17,35 +19,48 @@ public class RandomCategoryBuilder {
 
     private static final Set<String> existingCategoryTitles = new HashSet<>();
 
-    private final Category category;
+    private boolean withParent;
+    private boolean withChildren = false;
+    private boolean withNestedChildren = false;
 
+
+    private static final int INITIAL_CHILD_DEPTH = 1;
     public RandomCategoryBuilder() {
-        category = new Category(getTitle());
-
     }
 
     public RandomCategoryBuilder withParent() {
-        createParent(category);
+        withParent = true;
         return this;
     }
 
     public RandomCategoryBuilder withChildren() {
-        createChildren(category);
+        withChildren = true;
         return this;
     }
 
     public RandomCategoryBuilder withNestedChildren() {
-        if (category.getChildren() == null) {
-            createChildren(category);
-        }
-
-        final int currentDepth = 1;
-        category.getChildren().forEach(c -> fillNestedChildren(c, currentDepth));
+        withChildren = true;
+        withNestedChildren = true;
         return this;
     }
 
     public Category create() {
+        Category category = new Category(getTitle());
+        if (withParent)
+            createParent(category);
+        if (withChildren)
+            createChildren(category);
+        if (withNestedChildren)
+            createNestedChildren(category, INITIAL_CHILD_DEPTH);
         return category;
+    }
+
+    public List<Category> create(int count) {
+        List<Category> categories = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            categories.add(create());
+        }
+        return categories;
     }
 
     private void createParent(Category category) {
@@ -62,15 +77,15 @@ public class RandomCategoryBuilder {
         }
     }
 
-    private void fillNestedChildren(Category category, int depth) {
+    private void createNestedChildren(Category category, int depth) {
         if (depth >= CHILDREN_DEPTH_MAX) {
             return;
         }
         createChildren(category);
-        category.getChildren().forEach(c -> fillNestedChildren(c, depth + 1));
+        category.getChildren().forEach(c -> createNestedChildren(c, depth + 1));
     }
 
-    private String getTitle() {
+    public static String getTitle() {
         String title = StringUtils.getDistinct(existingCategoryTitles, TITLE_LENGTH_MIN, TITLE_LENGTH_MAX, true, true);
         existingCategoryTitles.add(title);
         return title;
