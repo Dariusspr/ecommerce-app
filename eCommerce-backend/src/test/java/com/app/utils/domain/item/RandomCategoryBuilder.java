@@ -18,14 +18,22 @@ public class RandomCategoryBuilder {
     private static final int CHILDREN_DEPTH_MAX = 4;
 
     private static final Set<String> existingCategoryTitles = new HashSet<>();
+    private static final Set<Long> existingCategoryIds = new HashSet<>();
 
     private boolean withParent;
     private boolean withChildren = false;
     private boolean withNestedChildren = false;
+    private boolean withId = false;
 
 
     private static final int INITIAL_CHILD_DEPTH = 1;
+
     public RandomCategoryBuilder() {
+    }
+
+    public RandomCategoryBuilder withId() {
+        withId = true;
+        return this;
     }
 
     public RandomCategoryBuilder withParent() {
@@ -46,6 +54,9 @@ public class RandomCategoryBuilder {
 
     public Category create() {
         Category category = new Category(getTitle());
+        if (withId) {
+            createId(category);
+        }
         if (withParent)
             createParent(category);
         if (withChildren)
@@ -53,6 +64,12 @@ public class RandomCategoryBuilder {
         if (withNestedChildren)
             createNestedChildren(category, INITIAL_CHILD_DEPTH);
         return category;
+    }
+
+    private void createId(Category category) {
+        Long id = NumberUtils.getDistinctId(existingCategoryIds);
+        existingCategoryIds.add(id);
+        category.setId(id);
     }
 
     public List<Category> create(int count) {
@@ -73,6 +90,9 @@ public class RandomCategoryBuilder {
 
         for (int i = 0; i < childrenCount; i++) {
             Category child = new Category(getTitle());
+            if (withId) {
+                createId(child);
+            }
             category.addChild(child);
         }
     }

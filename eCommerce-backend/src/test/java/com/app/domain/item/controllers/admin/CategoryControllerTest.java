@@ -35,8 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 public class CategoryControllerTest {
 
-    private final long id = 1; // Entity id for testing
-
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,6 +44,7 @@ public class CategoryControllerTest {
 
     @Test
     void deleteCategory_returnOk() throws Exception {
+        final long id = 1;
         doNothing().when(categoryService).deleteById(id);
 
         mockMvc.perform(delete(CategoryController.BASE_URL + "/" + id).contentType(MediaType.APPLICATION_JSON))
@@ -54,6 +53,7 @@ public class CategoryControllerTest {
 
     @Test
     void deleteCategory_returnException() throws Exception {
+        final long id = 1;
         doNothing().when(categoryService).deleteById(id);
         doThrow(new CategoryNotFoundException()).when(categoryService).deleteById(id);
 
@@ -65,8 +65,9 @@ public class CategoryControllerTest {
 
     @Test
     void addNewCategory_returnOk() throws Exception {
-        Category category = new RandomCategoryBuilder().create();
-        category.setId(id);
+        Category category = new RandomCategoryBuilder()
+                .withId()
+                .create();
         CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
         NewCategoryRequest request = new NewCategoryRequest(null, category.getTitle());
         String requestJSON = StringUtils.toJSON(request);
@@ -75,7 +76,7 @@ public class CategoryControllerTest {
 
         mockMvc.perform(post(CategoryController.BASE_URL).contentType(MediaType.APPLICATION_JSON).content(requestJSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(categoryDTO.id().intValue())))
+                .andExpect(jsonPath("$.id", is(categoryDTO.id())))
                 .andExpect(jsonPath("$.title", is(categoryDTO.title())));
     }
 
