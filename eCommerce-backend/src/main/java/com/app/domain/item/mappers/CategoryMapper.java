@@ -1,7 +1,6 @@
 package com.app.domain.item.mappers;
 
 import com.app.domain.item.dtos.CategoryDTO;
-import com.app.domain.item.dtos.requests.CategorySaveRequest;
 import com.app.domain.item.entities.Category;
 
 import java.util.List;
@@ -18,4 +17,7 @@ public class CategoryMapper {
         return categoryList.stream().map(CategoryMapper::toCategoryDTO).toList();
     }
 
+    public static Category toCategory(String title) {
+        return new Category(title);
+    }
 }

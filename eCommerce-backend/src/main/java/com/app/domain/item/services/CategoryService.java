@@ -2,6 +2,7 @@ package com.app.domain.item.services;
 
 
 import com.app.domain.item.dtos.CategoryDTO;
+import com.app.domain.item.dtos.requests.NewCategoryRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.exceptions.CategoryNotFoundException;
 import com.app.domain.item.mappers.CategoryMapper;
@@ -43,9 +44,22 @@ public class CategoryService {
         return categoryRepository.findByParentId(id);
     }
 
+    @Transactional
     public void deleteById(Long id) {
         Category category = findById(id);
         categoryRepository.delete(category);
+    }
+
+    @Transactional
+    public Category addNewCategory(NewCategoryRequest request) {
+        Category category = CategoryMapper.toCategory(request.title());
+        save(category);
+        if (request.parentId() != null) {
+            Category parent = findById(request.parentId());
+            parent.addChild(category);
+            save(parent);
+        }
+        return category;
     }
 
     // DTO methods
@@ -82,6 +96,12 @@ public class CategoryService {
         return categories.stream()
                 .map(CategoryMapper::toCategoryDTO)
                 .toList();
+    }
+
+    @Transactional
+    public CategoryDTO addNewCategoryDTO(NewCategoryRequest request) {
+        Category category = addNewCategory(request);
+        return CategoryMapper.toCategoryDTO(category);
     }
 
 }

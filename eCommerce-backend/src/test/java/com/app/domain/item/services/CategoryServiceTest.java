@@ -1,6 +1,7 @@
 package com.app.domain.item.services;
 
 import com.app.domain.item.dtos.CategoryDTO;
+import com.app.domain.item.dtos.requests.NewCategoryRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.exceptions.CategoryNotFoundException;
 import com.app.domain.item.mappers.CategoryMapper;
@@ -223,6 +224,33 @@ public class CategoryServiceTest {
         assertThrows(CategoryNotFoundException.class, () -> categoryService.findById(nestedChildId));
     }
 
+    @Test
+    void addNewCategory_noParent() {
+        final String title = RandomCategoryBuilder.getTitle();
+        NewCategoryRequest request = new NewCategoryRequest(null, title);
+
+        Category returnedCategory = categoryService.addNewCategory(request);
+
+        assertEquals(title, returnedCategory.getTitle());
+        assertNotNull(returnedCategory.getId());
+    }
+
+    @Test
+    void addNewCategory_withParentInDatabase() {
+        Category parent = new RandomCategoryBuilder().create();
+        categoryService.save(parent);
+        final Long parentId = parent.getId();
+        final String title = RandomCategoryBuilder.getTitle();
+        NewCategoryRequest request = new NewCategoryRequest(parentId, title);
+
+        Category returnedCategory = categoryService.addNewCategory(request);
+
+        Category returnedParent = returnedCategory.getParent();
+        assertEquals(title, returnedCategory.getTitle());
+        assertNotNull(returnedCategory.getId());
+        assertEquals(parentId, returnedParent.getId());
+    }
+
     // DTO methods
 
     @Test
@@ -317,5 +345,30 @@ public class CategoryServiceTest {
         List<CategoryDTO> returnedDtos = categoryService.findDtosByParentId(category.getId());
 
         assertEquals(childrenDtos, returnedDtos);
+    }
+
+    @Test
+    void addNewCategoryDTO_noParent() {
+        final String title = RandomCategoryBuilder.getTitle();
+        NewCategoryRequest request = new NewCategoryRequest(null, title);
+
+        CategoryDTO returnedCategoryDTO = categoryService.addNewCategoryDTO(request);
+
+        assertEquals(title, returnedCategoryDTO.title());
+        assertNotNull(returnedCategoryDTO.id());
+    }
+
+    @Test
+    void addNewCategoryDTO_withParentInDatabase() {
+        Category parent = new RandomCategoryBuilder().create();
+        categoryService.save(parent);
+        final Long parentId = parent.getId();
+        final String title = RandomCategoryBuilder.getTitle();
+        NewCategoryRequest request = new NewCategoryRequest(parentId, title);
+
+        CategoryDTO returnedCategoryDTO = categoryService.addNewCategoryDTO(request);
+
+        assertEquals(title, returnedCategoryDTO.title());
+        assertNotNull(returnedCategoryDTO.id());
     }
 }
