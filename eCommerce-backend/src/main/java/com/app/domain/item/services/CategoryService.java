@@ -5,6 +5,7 @@ import com.app.domain.item.dtos.CategoryDTO;
 import com.app.domain.item.dtos.requests.NewCategoryRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.exceptions.CategoryNotFoundException;
+import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
 import com.app.domain.item.mappers.CategoryMapper;
 import com.app.domain.item.repositories.CategoryRepository;
 import jakarta.transaction.Transactional;
@@ -55,9 +56,13 @@ public class CategoryService {
         Category category = CategoryMapper.toCategory(request.title());
         save(category);
         if (request.parentId() != null) {
-            Category parent = findById(request.parentId());
-            parent.addChild(category);
-            save(parent);
+            try {
+                Category parent = findById(request.parentId());
+                parent.addChild(category);
+                save(parent);
+            } catch (CategoryNotFoundException e) {
+                throw new ParentCategoryNotFoundException();
+            }
         }
         return category;
     }

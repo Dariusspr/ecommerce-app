@@ -1,5 +1,9 @@
 package com.app.utils.global;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.HashSet;
@@ -47,10 +51,18 @@ public class StringUtils {
         return generatedString;
     }
 
-    private StringUtils() {}
+    public static String toJSON(Object o) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+        return objectWriter.writeValueAsString(o);
+    }
+
 
     public static String getText(int lengthMax) {
         final int TEXT_LENGTH_MIN = 1;
         return RandomStringUtils.randomAlphanumeric(TEXT_LENGTH_MIN, lengthMax);
     }
+
+    private StringUtils() {}
 }
