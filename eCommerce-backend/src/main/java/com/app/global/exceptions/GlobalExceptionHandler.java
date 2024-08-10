@@ -2,6 +2,7 @@ package com.app.global.exceptions;
 
 import com.app.domain.item.exceptions.CategoryNotFoundException;
 import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
+import com.app.global.constants.ExceptionMessages;
 import com.app.global.dtos.ExceptionDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,5 +22,11 @@ public class GlobalExceptionHandler {
     ResponseEntity<ExceptionDTO> handleParentCategoryNotFound(ParentCategoryNotFoundException exception) {
         ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
         return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<ExceptionDTO> handleGeneric(Exception exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(ExceptionMessages.GENERIC_MESSAGE);
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
