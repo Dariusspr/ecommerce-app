@@ -1,7 +1,9 @@
 package com.app.domain.member.services;
 
 import com.app.domain.member.dtos.MemberSummaryDTO;
+import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.entities.Member;
+import com.app.domain.member.exceptions.MemberAlreadyExistsException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
 import com.app.domain.member.repositories.MemberRepository;
@@ -19,12 +21,6 @@ public class MemberService {
         this.memberRepository = memberRepository;
     }
 
-
-    @Transactional
-    public MemberSummaryDTO save(Member member) {
-        return MemberMapper.toMemberSummaryDTO(memberRepository.save(member));
-    }
-
     @Transactional
     public void deleteById(Long id) {
         Member member = findById(id);
@@ -36,6 +32,29 @@ public class MemberService {
                 .orElseThrow(MemberNotFoundException::new);
     }
 
+    // DTO methods
+
+    @Transactional
+    public MemberSummaryDTO registerNewMember(NewMemberRequest request) {
+        if (memberExists(request.username())) {
+            throw new MemberAlreadyExistsException();
+        }
+        Member member = MemberMapper.toMember(request);
+        return save(member);
+    }
+
+    @Transactional
+    public MemberSummaryDTO save(Member member) {
+        return MemberMapper.toMemberSummaryDTO(memberRepository.save(member));
+    }
+
+
+    @Transactional
+    public MemberSummaryDTO findSummaryDtoById(Long id) {
+        Member returned = findById(id);
+        return MemberMapper.toMemberSummaryDTO(returned);
+    }
+
     public Page<MemberSummaryDTO> findAllSummariesByUsername(String username, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<Member> memberPage = memberRepository.findAllByUsername(username, pageable);
@@ -44,15 +63,6 @@ public class MemberService {
         }
         return memberPage.map(MemberMapper::toMemberSummaryDTO);
     }
-
-    // DTO methods
-
-    @Transactional
-    public MemberSummaryDTO findSummaryDtoById(Long id) {
-        Member returned = findById(id);
-        return MemberMapper.toMemberSummaryDTO(returned);
-    }
-
 
 
     private boolean memberExists(String username) {

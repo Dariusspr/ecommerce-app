@@ -1,7 +1,9 @@
 package com.app.domain.member.services;
 
 import com.app.domain.member.dtos.MemberSummaryDTO;
+import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.entities.Member;
+import com.app.domain.member.exceptions.MemberAlreadyExistsException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
 import com.app.global.enums.Gender;
@@ -160,6 +162,31 @@ public class MemberServiceTest {
 
         assertThrows(MemberNotFoundException.class, () -> memberService
                 .findAllSummariesByUsername(username, 1, PAGE_SIZE_1));
+    }
+
+    @Test
+    void registerNewMember_ok() {
+        NewMemberRequest request = new NewMemberRequest(
+                RandomMemberBuilder.getUsername(),
+                RandomMemberBuilder.getPassword(),
+                RandomMemberBuilder.getEmail());
+
+        MemberSummaryDTO returnedMemberDto = memberService.registerNewMember(request);
+
+        assertEquals(request.username(), returnedMemberDto.username());
+        assertNotNull(returnedMemberDto.profile());
+    }
+
+    @Test
+    void registerNewMember_throwMemberAlreadyExists() {
+        Member member = new RandomMemberBuilder().create();
+        memberService.save(member);
+        NewMemberRequest request = new NewMemberRequest(
+                member.getUsername(),
+                RandomMemberBuilder.getPassword(),
+                RandomMemberBuilder.getEmail());
+
+        assertThrows(MemberAlreadyExistsException.class, () -> memberService.registerNewMember(request));
     }
 
 }
