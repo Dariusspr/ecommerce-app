@@ -14,7 +14,7 @@ public class NumberUtils {
     private static final int MAX_ATTEMPTS = 10;
     private static final Random random = new Random();
 
-    public static int genIntegerInRange(int min, int max) {
+    public static int getIntegerInRange(int min, int max) {
         return random.nextInt(min, max + 1);
     }
 
@@ -62,7 +62,7 @@ public class NumberUtils {
                 throw new IllegalStateException("Failed to generate unique id");
             }
 
-            int randomLength = NumberUtils.genIntegerInRange(lengthMin, lengthMax);
+            int randomLength = NumberUtils.getIntegerInRange(lengthMin, lengthMax);
             generatedString = RandomStringUtils.random(randomLength, letters, numeric);
         } while (presentStrings.contains(generatedString));
 

@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
 
 import static com.app.global.constants.UserInputConstants.*;
 
@@ -58,6 +61,7 @@ public class Member extends AuditableEntity {
         this.profile = new Media(DEFAULT_MEMBER_PROFILE_TITLE, DEFAULT_MEMBER_PROFILE_URL, DEFAULT_MEMBER_PROFILE_FORMAT);
     }
 
+
     public Member(Long id, String username, String password, String email, Gender gender, Media profile) {
         this.id = id;
         this.username = username;
@@ -65,6 +69,18 @@ public class Member extends AuditableEntity {
         this.email = email;
         this.gender = gender;
         this.profile = profile;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Member member)) return false;
+        return Objects.equals(getUsername(), member.getUsername());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUsername());
     }
 
     // AUTO GENERATED
@@ -116,4 +132,17 @@ public class Member extends AuditableEntity {
     public void setProfile(Media profile) {
         this.profile = profile;
     }
+
+    @Override
+    public String toString() {
+        return "Member{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", gender=" + gender +
+                ", profile=" + profile +
+                '}';
+    }
+
 }

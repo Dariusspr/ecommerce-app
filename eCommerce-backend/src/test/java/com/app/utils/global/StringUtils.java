@@ -44,7 +44,7 @@ public class StringUtils {
                 throw new IllegalStateException("Failed to generate unique string");
             }
 
-            int randomLength = NumberUtils.genIntegerInRange(lengthMin, lengthMax);
+            int randomLength = NumberUtils.getIntegerInRange(lengthMin, lengthMax);
             generatedString = RandomStringUtils.random(randomLength, letters, numeric);
         } while (presentStrings.contains(generatedString));
 
