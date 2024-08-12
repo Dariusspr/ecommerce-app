@@ -8,7 +8,7 @@ import com.app.domain.item.exceptions.CategoryNotFoundException;
 import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
 import com.app.domain.item.mappers.CategoryMapper;
 import com.app.domain.item.repositories.CategoryRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -75,19 +75,19 @@ public class CategoryService {
         return CategoryMapper.toCategoryDTO(returned);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public CategoryDTO findDtoByTitle(String title) {
         Category category = findByTitle(title);
         return CategoryMapper.toCategoryDTO(category);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public CategoryDTO findDtoById(Long id) {
         Category category = findById(id);
         return CategoryMapper.toCategoryDTO(category);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CategoryDTO> findRootsDto() {
         List<Category> categories = findRoots();
         return categories.stream()
@@ -95,7 +95,7 @@ public class CategoryService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CategoryDTO> findDtosByParentId(Long id) {
         List<Category> categories = findByParentId(id);
         return categories.stream()

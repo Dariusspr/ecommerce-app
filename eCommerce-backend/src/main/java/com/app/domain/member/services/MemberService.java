@@ -7,7 +7,7 @@ import com.app.domain.member.exceptions.MemberAlreadyExistsException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
 import com.app.domain.member.repositories.MemberRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +49,7 @@ public class MemberService {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public MemberSummaryDTO findSummaryDtoById(Long id) {
         Member returned = findById(id);
         return MemberMapper.toMemberSummaryDTO(returned);
