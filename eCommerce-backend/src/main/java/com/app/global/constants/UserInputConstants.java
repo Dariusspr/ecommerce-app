@@ -15,6 +15,8 @@ public class UserInputConstants {
     public static final int USERNAME_LENGTH_MIN = 3;
     public static final int USERNAME_LENGTH_MAX = 30;
 
+    public static final int PASSWORD_LENGTH_MIN = 6;
+    public static final int PASSWORD_LENGTH_MAX = 255;;
     public static final int PASSWORD_HASHED_LENGTH = 60;
 
     public static final Gender DEFAULT_MEMBER_GENDER = Gender.OTHER;
