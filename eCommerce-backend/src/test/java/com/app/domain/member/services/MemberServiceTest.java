@@ -7,6 +7,7 @@ import com.app.domain.member.mappers.MemberMapper;
 import com.app.global.enums.Gender;
 import com.app.utils.domain.member.RandomMemberBuilder;
 import com.app.utils.global.NumberUtils;
+import com.app.utils.global.StringUtils;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -22,8 +25,43 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("Integration test")
 public class MemberServiceTest {
 
+    private static final int PAGE_SIZE_1 = 1;
+
+
     @Autowired
     private MemberService memberService;
+
+
+    @Test
+    void findById_ok() {
+        Member member = new RandomMemberBuilder().create();
+        memberService.save(member);
+
+        Member returnedMember = memberService.findById(member.getId());
+
+        assertEquals(member, returnedMember);
+    }
+
+    @Test
+    void findById_throwMemberNotFound() {
+        final Long id = NumberUtils.getId();
+
+        assertThrows(MemberNotFoundException.class, () -> memberService.findById(id));
+    }
+
+    @Test
+    void deleteByID_ok() {
+        Member member = new RandomMemberBuilder().create();
+        memberService.save(member);
+        final Long id = member.getId();
+        assertDoesNotThrow(() -> memberService.findById(id));
+
+        memberService.deleteById(id);
+
+        assertThrows(MemberNotFoundException.class, () -> memberService.findById(id));
+    }
+
+    // DTO methods
 
     @Test
     void save_ok() {
@@ -56,8 +94,7 @@ public class MemberServiceTest {
     @Test
     void save_modify() {
         Member member = new RandomMemberBuilder().create();
-        memberService.save(member);
-        MemberSummaryDTO originalMemberDto = MemberMapper.toMemberSummaryDTO(member);
+        MemberSummaryDTO originalMemberDto = memberService.save(member);
         member.setGender(Gender.MALE);
 
         MemberSummaryDTO returnedMemberDto = memberService.save(member);
@@ -66,58 +103,10 @@ public class MemberServiceTest {
     }
 
     @Test
-    void findById_ok() {
-        Member member = new RandomMemberBuilder().create();
-        memberService.save(member);
-
-        Member returnedMember = memberService.findById(member.getId());
-
-        assertEquals(member, returnedMember);
-    }
-
-    @Test
-    void findById_throwMemberNotFound() {
-        final Long id = NumberUtils.getId();
-
-        assertThrows(MemberNotFoundException.class, () -> memberService.findById(id));
-    }
-
-    @Test
-    void findByUsername_ok() {
-        Member member = new RandomMemberBuilder().create();
-        memberService.save(member);
-
-        Member returnedMember = memberService.findByUsername(member.getUsername());
-
-        assertEquals(member, returnedMember);
-    }
-
-    @Test
-    void findByUsername_throwMemberNotFound() {
-        final String username = RandomMemberBuilder.getUsername();
-
-        assertThrows(MemberNotFoundException.class, () -> memberService.findByUsername(username));
-    }
-
-    @Test
-    void deleteByID_ok() {
-        Member member = new RandomMemberBuilder().create();
-        memberService.save(member);
-        final Long id = member.getId();
-        assertDoesNotThrow(() -> memberService.findById(id));
-
-        memberService.deleteById(id);
-
-        assertThrows(MemberNotFoundException.class, () -> memberService.findById(id));
-    }
-
-    // DTO methods
-
-    @Test
     void findSummaryDtoById_ok() {
         Member member = new RandomMemberBuilder().create();
-        memberService.save(member);
-        MemberSummaryDTO memberDto = MemberMapper.toMemberSummaryDTO(member);
+        MemberSummaryDTO memberDto = memberService.save(member);
+
         MemberSummaryDTO returnedMemberDto = memberService.findSummaryDtoById(member.getId());
 
         assertEquals(memberDto, returnedMemberDto);
@@ -131,21 +120,46 @@ public class MemberServiceTest {
     }
 
     @Test
-    void findSummaryDtoByUsername_ok() {
+    void findAllSummariesByUsername_single_ok() {
         Member member = new RandomMemberBuilder().create();
-        memberService.save(member);
-        MemberSummaryDTO memberDto = MemberMapper.toMemberSummaryDTO(member);
+        MemberSummaryDTO memberSummaryDTO = memberService.save(member);
 
-        MemberSummaryDTO returnedMemberDto = memberService.findSummaryDtoByUsername(member.getUsername());
+        List<MemberSummaryDTO> returnedMemberPage = memberService
+                .findAllSummariesByUsername(member.getUsername(), 0, PAGE_SIZE_1)
+                .getContent();
 
-        assertEquals(memberDto, returnedMemberDto);
+        assertEquals(memberSummaryDTO, returnedMemberPage.getFirst());
     }
 
     @Test
-    void findSummaryDtoByUsername_throwMemberNotFound() {
+    void findAllSummariesByUsername_multiple_ok() {
+        final int memberCountToTest = 5;
+        RandomMemberBuilder builder = new RandomMemberBuilder();
+        List<Member> members = builder.create(memberCountToTest);
+        String firstUsername = members.getFirst().getUsername();
+        String modifiedUsername1 = firstUsername + StringUtils.getText(1);
+        String modifiedUsername2 = StringUtils.getText(1) + members.getFirst().getUsername();
+        members.get(2).setUsername(modifiedUsername1);
+        members.get(3).setUsername(modifiedUsername2);
+        members.forEach(memberService::save);
+
+        List<MemberSummaryDTO> returnedMemberPage1 = memberService
+                .findAllSummariesByUsername(firstUsername, 1, PAGE_SIZE_1)
+                .getContent();
+        List<MemberSummaryDTO> returnedMemberPage2 = memberService
+                .findAllSummariesByUsername(firstUsername, 2, PAGE_SIZE_1)
+                .getContent();
+
+        assertFalse(returnedMemberPage1.isEmpty());
+        assertFalse(returnedMemberPage2.isEmpty());
+    }
+
+    @Test
+    void findAllSummariesByUsername_throwMemberNotFound() {
         final String username = RandomMemberBuilder.getUsername();
 
-        assertThrows(MemberNotFoundException.class, () -> memberService.findByUsername(username));
+        assertThrows(MemberNotFoundException.class, () -> memberService
+                .findAllSummariesByUsername(username, 1, PAGE_SIZE_1));
     }
 
 }

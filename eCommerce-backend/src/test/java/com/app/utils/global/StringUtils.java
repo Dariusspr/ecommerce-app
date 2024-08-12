@@ -61,6 +61,9 @@ public class StringUtils {
 
     public static String getText(int lengthMax) {
         final int TEXT_LENGTH_MIN = 1;
+        if (lengthMax < TEXT_LENGTH_MIN) {
+            throw new IllegalArgumentException("Max text length can't be less than 1");
+        }
         return RandomStringUtils.randomAlphanumeric(TEXT_LENGTH_MIN, lengthMax);
     }
 
