@@ -5,10 +5,7 @@ import com.app.domain.item.entities.Category;
 import com.app.utils.global.NumberUtils;
 import com.app.utils.global.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MAX;
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MIN;
@@ -22,6 +19,7 @@ public class RandomCategoryBuilder {
 
     private boolean withParent;
     private boolean withChildren = false;
+    private Integer customChildrenCount;
     private boolean withNestedChildren = false;
     private boolean withId = false;
 
@@ -44,6 +42,11 @@ public class RandomCategoryBuilder {
     public RandomCategoryBuilder withChildren() {
         withChildren = true;
         return this;
+    }
+
+    public RandomCategoryBuilder withChildren(Integer customChildrenCount) {
+        this.customChildrenCount = customChildrenCount;
+        return withChildren();
     }
 
     public RandomCategoryBuilder withNestedChildren() {
@@ -86,7 +89,9 @@ public class RandomCategoryBuilder {
     }
 
     private void createChildren(Category category) {
-        int childrenCount = NumberUtils.getIntegerInRange(1, CHILDREN_COUNT_MAX);
+        int childrenCount = Objects.requireNonNullElseGet(
+                customChildrenCount,
+                () -> NumberUtils.getIntegerInRange(1, CHILDREN_COUNT_MAX));
 
         for (int i = 0; i < childrenCount; i++) {
             Category child = new Category(getTitle());
@@ -109,5 +114,16 @@ public class RandomCategoryBuilder {
         String title = StringUtils.getDistinct(existingCategoryTitles, TITLE_LENGTH_MIN, TITLE_LENGTH_MAX, true, true);
         existingCategoryTitles.add(title);
         return title;
+    }
+
+    public static Category chain(List<Category> categories) {
+        Category parent = categories.getFirst();
+        categories.removeFirst();
+        Category current = parent;
+        for (Category category : categories) {
+            current.addChild(category);
+            current = category;
+        }
+        return parent;
     }
 }
