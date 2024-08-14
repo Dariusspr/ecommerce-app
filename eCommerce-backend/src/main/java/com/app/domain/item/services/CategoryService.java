@@ -11,7 +11,9 @@ import com.app.domain.item.repositories.CategoryRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CategoryService {
@@ -49,6 +51,21 @@ public class CategoryService {
     public void deleteById(Long id) {
         Category category = findById(id);
         categoryRepository.delete(category);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<Category> findFrom(Long id) {
+        Category category = findById(id);
+        return findFrom(category);
+    }
+    @Transactional(readOnly = true)
+    protected Set<Category> findFrom(Category category) {
+        Set<Category> categories = new HashSet<>();
+        categories.add(category);
+        for (Category child : category.getChildren()) {
+            categories.addAll(findFrom(child));
+        }
+        return categories;
     }
 
     @Transactional

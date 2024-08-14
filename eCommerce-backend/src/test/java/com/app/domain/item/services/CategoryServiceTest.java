@@ -17,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CategoryServiceTest {
 
     private static final int CATEGORY_ROOT_COUNT = 3;
+    private static final int CATEGORY_COUNT_MIN = 3;
+    private static final int CATEGORY_COUNT_MAX = 15;
 
     @Autowired
     private CategoryService categoryService;
@@ -233,6 +236,40 @@ public class CategoryServiceTest {
 
         assertEquals(title, returnedCategory.getTitle());
         assertNotNull(returnedCategory.getId());
+    }
+
+    @Test
+    void findFrom_single() {
+        Category category = new RandomCategoryBuilder().create();
+        categoryService.save(category);
+        Set<Category> returnedCategories = categoryService.findFrom(category.getId());
+
+        assertEquals(1, returnedCategories.size());
+    }
+
+    @Test
+    void findFrom_oneChildEach() {
+        final int categoryCount = NumberUtils.getIntegerInRange(CATEGORY_COUNT_MIN, CATEGORY_COUNT_MAX);
+        List<Category> categories = new RandomCategoryBuilder().create(categoryCount);
+        Category category = RandomCategoryBuilder.chain(categories);
+        categoryService.save(category);
+
+        Set<Category> returnedCategories = categoryService.findFrom(category.getId());
+
+        assertEquals(categoryCount, returnedCategories.size());
+    }
+
+    @Test
+    void findFrom_threeChildEach() {
+        final int categoryCount = NumberUtils.getIntegerInRange(CATEGORY_COUNT_MIN, CATEGORY_COUNT_MAX);
+        final int childrenCount = NumberUtils.getIntegerInRange(CATEGORY_COUNT_MIN, CATEGORY_COUNT_MAX);
+        List<Category> categories = new RandomCategoryBuilder().withChildren(childrenCount).create(categoryCount);
+        Category category = RandomCategoryBuilder.chain(categories);
+        categoryService.save(category);
+
+        Set<Category> returnedCategories = categoryService.findFrom(category.getId());
+
+        assertEquals(categoryCount * (childrenCount + 1), returnedCategories.size());
     }
 
     @Test
