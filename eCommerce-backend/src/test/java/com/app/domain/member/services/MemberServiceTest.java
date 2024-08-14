@@ -146,14 +146,18 @@ public class MemberServiceTest {
         members.forEach(memberService::save);
 
         List<MemberSummaryDTO> returnedMemberPage1 = memberService
-                .findAllSummariesByUsername(firstUsername, 1, PAGE_SIZE_1)
+                .findAllSummariesByUsername(firstUsername, 0, PAGE_SIZE_1)
                 .getContent();
         List<MemberSummaryDTO> returnedMemberPage2 = memberService
+                .findAllSummariesByUsername(firstUsername, 1, PAGE_SIZE_1)
+                .getContent();
+        List<MemberSummaryDTO> returnedMemberPage3 = memberService
                 .findAllSummariesByUsername(firstUsername, 2, PAGE_SIZE_1)
                 .getContent();
 
         assertFalse(returnedMemberPage1.isEmpty());
         assertFalse(returnedMemberPage2.isEmpty());
+        assertFalse(returnedMemberPage3.isEmpty());
     }
 
     @Test
@@ -161,7 +165,7 @@ public class MemberServiceTest {
         final String username = RandomMemberBuilder.getUsername();
 
         assertThrows(MemberNotFoundException.class, () -> memberService
-                .findAllSummariesByUsername(username, 1, PAGE_SIZE_1));
+                .findAllSummariesByUsername(username, 0, PAGE_SIZE_1));
     }
 
     @Test

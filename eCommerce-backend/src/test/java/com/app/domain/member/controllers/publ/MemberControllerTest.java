@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = MemberController.class)
 @ExtendWith(MockitoExtension.class)
 public class MemberControllerTest {
-    private final int PAGE_NUMBER_1 = 1;
+    private final int PAGE_NUMBER_0 = 0;
 
     @Autowired
     private MockMvc mockMvc;
@@ -84,13 +84,34 @@ public class MemberControllerTest {
                 .toList();
         final Page<MemberSummaryDTO> memberSummaryDTOPage = new PageImpl<>(
                 memberSummaryDTOS,
-                PageRequest.of(PAGE_NUMBER_1, MemberController.PAGE_SIZE),
+                PageRequest.of(PAGE_NUMBER_0, MemberController.PAGE_SIZE),
                 memberSummaryDTOS.size());
-        given(memberService.findAllSummariesByUsername(" ", 1, MemberController.PAGE_SIZE))
+        given(memberService.findAllSummariesByUsername(" ", PAGE_NUMBER_0, MemberController.PAGE_SIZE))
                 .willReturn(memberSummaryDTOPage);
 
         mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
-                        .param("pageNumber", String.valueOf(PAGE_NUMBER_1))
+                        .param("pageNumber", String.valueOf(PAGE_NUMBER_0))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.content.size()", is(memberCount)));
+    }
+
+    @Test
+    void getMembersByUsernames_noPageNumber_returnOk() throws Exception {
+        final int memberCount = 2;
+        final List<Member> memberList = new RandomMemberBuilder().withId().create(memberCount);
+        final List<MemberSummaryDTO> memberSummaryDTOS = memberList.stream()
+                .map(MemberMapper::toMemberSummaryDTO)
+                .toList();
+        final Page<MemberSummaryDTO> memberSummaryDTOPage = new PageImpl<>(
+                memberSummaryDTOS,
+                PageRequest.of(PAGE_NUMBER_0, MemberController.PAGE_SIZE),
+                memberSummaryDTOS.size());
+        given(memberService.findAllSummariesByUsername(" ", PAGE_NUMBER_0, MemberController.PAGE_SIZE))
+                .willReturn(memberSummaryDTOPage);
+
+        mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -102,7 +123,7 @@ public class MemberControllerTest {
         doThrow(new MemberNotFoundException()).when(memberService).findAllSummariesByUsername(anyString(), anyInt(), anyInt());
 
         mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
-                        .param("pageNumber", String.valueOf(PAGE_NUMBER_1))
+                        .param("pageNumber", String.valueOf(PAGE_NUMBER_0))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

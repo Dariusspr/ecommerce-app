@@ -28,7 +28,7 @@ public class MemberController {
     }
 
     @GetMapping("/username/{username}")
-    public ResponseEntity<Page<MemberSummaryDTO>> getMembersByUsernames(@PathVariable String username, @RequestParam(defaultValue = "1") @Min(1) int pageNumber) {
+    public ResponseEntity<Page<MemberSummaryDTO>> getMembersByUsernames(@PathVariable String username, @RequestParam(defaultValue = "0") @Min(0) int pageNumber) {
         Page<MemberSummaryDTO> memberSummaryDTOPage = memberService.findAllSummariesByUsername(username, pageNumber, PAGE_SIZE);
         return ResponseEntity.ok(memberSummaryDTOPage);
     }
