@@ -27,7 +27,7 @@ public class NumberUtils {
     }
 
     public static BigDecimal getPrice() {
-        long maxPrice = (long) Math.pow(10, PRICE_PRECISION);
+        long maxPrice = (long) Math.pow(5, PRICE_PRECISION);
         BigDecimal bigDecimal = getBigDecimal(0, maxPrice);
         return bigDecimal.setScale(PRICE_SCALE, RoundingMode.HALF_DOWN);
     }
