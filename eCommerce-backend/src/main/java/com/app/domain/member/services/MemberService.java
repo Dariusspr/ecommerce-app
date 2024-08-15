@@ -9,7 +9,6 @@ import com.app.domain.member.mappers.MemberMapper;
 import com.app.domain.member.repositories.MemberRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -55,8 +54,7 @@ public class MemberService {
         return MemberMapper.toMemberSummaryDTO(returned);
     }
 
-    public Page<MemberSummaryDTO> findAllSummariesByUsername(String username, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+    public Page<MemberSummaryDTO> findAllSummariesByUsername(String username, Pageable pageable) {
         Page<Member> memberPage = memberRepository.findAllByUsername(username, pageable);
         if (memberPage.isEmpty()) {
             throw new MemberNotFoundException();

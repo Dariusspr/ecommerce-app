@@ -4,8 +4,8 @@ import com.app.domain.member.dtos.MemberSummaryDTO;
 import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.services.MemberService;
 import com.app.global.constants.RestEndpoints;
-import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(MemberController.BASE_URL)
 public class MemberController {
     public static final String BASE_URL = RestEndpoints.PUBLIC_API + "/members";
-    public static final int PAGE_SIZE = 10;
 
     private final MemberService memberService;
 
@@ -28,8 +27,8 @@ public class MemberController {
     }
 
     @GetMapping("/username/{username}")
-    public ResponseEntity<Page<MemberSummaryDTO>> getMembersByUsernames(@PathVariable String username, @RequestParam(defaultValue = "0") @Min(0) int pageNumber) {
-        Page<MemberSummaryDTO> memberSummaryDTOPage = memberService.findAllSummariesByUsername(username, pageNumber, PAGE_SIZE);
+    public ResponseEntity<Page<MemberSummaryDTO>> getMembersByUsernames(@PathVariable String username, Pageable pageable) {
+        Page<MemberSummaryDTO> memberSummaryDTOPage = memberService.findAllSummariesByUsername(username, pageable);
         return ResponseEntity.ok(memberSummaryDTOPage);
     }
 

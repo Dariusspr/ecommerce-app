@@ -20,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,13 +37,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = MemberController.class)
 @ExtendWith(MockitoExtension.class)
 public class MemberControllerTest {
-    private final int PAGE_NUMBER_0 = 0;
+    private static final int PAGE_NUMBER_0 = 0;
+    private static final int PAGE_SIZE = 20;
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private MemberService memberService;
+
+    private final Pageable pageable = PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE);
+    ;
 
     @Test
     void getMemberById_returnOk() throws Exception {
@@ -84,13 +89,14 @@ public class MemberControllerTest {
                 .toList();
         final Page<MemberSummaryDTO> memberSummaryDTOPage = new PageImpl<>(
                 memberSummaryDTOS,
-                PageRequest.of(PAGE_NUMBER_0, MemberController.PAGE_SIZE),
+                PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE),
                 memberSummaryDTOS.size());
-        given(memberService.findAllSummariesByUsername(" ", PAGE_NUMBER_0, MemberController.PAGE_SIZE))
+        given(memberService.findAllSummariesByUsername(" ", pageable))
                 .willReturn(memberSummaryDTOPage);
 
         mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
-                        .param("pageNumber", String.valueOf(PAGE_NUMBER_0))
+                        .param("page", String.valueOf(pageable.getPageNumber()))
+                        .param("size", String.valueOf(pageable.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -106,9 +112,9 @@ public class MemberControllerTest {
                 .toList();
         final Page<MemberSummaryDTO> memberSummaryDTOPage = new PageImpl<>(
                 memberSummaryDTOS,
-                PageRequest.of(PAGE_NUMBER_0, MemberController.PAGE_SIZE),
+                PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE),
                 memberSummaryDTOS.size());
-        given(memberService.findAllSummariesByUsername(" ", PAGE_NUMBER_0, MemberController.PAGE_SIZE))
+        given(memberService.findAllSummariesByUsername(" ", pageable))
                 .willReturn(memberSummaryDTOPage);
 
         mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
@@ -120,10 +126,11 @@ public class MemberControllerTest {
 
     @Test
     void getMembersByUsernames_returnBadRequest() throws Exception {
-        doThrow(new MemberNotFoundException()).when(memberService).findAllSummariesByUsername(anyString(), anyInt(), anyInt());
+        doThrow(new MemberNotFoundException()).when(memberService).findAllSummariesByUsername(anyString(), any());
 
         mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
-                        .param("pageNumber", String.valueOf(PAGE_NUMBER_0))
+                        .param("page", String.valueOf(pageable.getPageNumber()))
+                        .param("size", String.valueOf(pageable.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
