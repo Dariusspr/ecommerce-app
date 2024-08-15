@@ -10,6 +10,8 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import static com.app.global.constants.UserInputConstants.*;
 
@@ -18,9 +20,9 @@ import static com.app.global.constants.UserInputConstants.*;
 public class Item extends AuditableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "item_id")
-    private Long id;
+    private UUID id;
 
     @NotBlank
     @Size(min = TITLE_LENGTH_MIN, max = TITLE_LENGTH_MAX)
@@ -47,7 +49,8 @@ public class Item extends AuditableEntity {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    protected Item() {}
+    protected Item() {
+    }
 
     public Item(String title, BigDecimal price, Member seller) {
         this.title = title;
@@ -78,13 +81,26 @@ public class Item extends AuditableEntity {
         mediaList.remove(media);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Item item)) return false;
+        return Objects.equals(getId(), item.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+
+
     // AUTO GENERATED
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -134,5 +150,18 @@ public class Item extends AuditableEntity {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", price=" + price +
+                ", description='" + description + '\'' +
+                ", seller=" + seller +
+                ", mediaList=" + mediaList +
+                ", category=" + category +
+                '}';
     }
 }
