@@ -76,9 +76,9 @@ public class RandomItemBuilder {
     }
 
     private void setCategory(Item item) {
-        Category category = Objects.requireNonNullElseGet(
+        Category category = Objects.requireNonNullElse(
                 customCategory,
-                () -> new RandomCategoryBuilder().create());
+                new RandomCategoryBuilder().create());
         item.setCategory(category);
     }
 
@@ -88,7 +88,7 @@ public class RandomItemBuilder {
         medias.forEach(item::addMedia);
     }
 
-    public String getTitle() {
+    public static String getTitle() {
         return RandomStringUtils.randomAlphanumeric(TITLE_LENGTH_MIN, TITLE_LENGTH_MAX);
     }
 }

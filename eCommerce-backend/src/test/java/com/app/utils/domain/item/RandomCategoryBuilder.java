@@ -89,9 +89,9 @@ public class RandomCategoryBuilder {
     }
 
     private void createChildren(Category category) {
-        int childrenCount = Objects.requireNonNullElseGet(
+        int childrenCount = Objects.requireNonNullElse(
                 customChildrenCount,
-                () -> NumberUtils.getIntegerInRange(1, CHILDREN_COUNT_MAX));
+                NumberUtils.getIntegerInRange(1, CHILDREN_COUNT_MAX));
 
         for (int i = 0; i < childrenCount; i++) {
             Category child = new Category(getTitle());
