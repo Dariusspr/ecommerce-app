@@ -10,9 +10,11 @@ import com.app.utils.global.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MAX;
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MIN;
@@ -25,6 +27,8 @@ public class RandomItemBuilder {
     private boolean withCategory;
     private Category customCategory;
     private boolean withMedia;
+    private boolean withId;
+    private boolean withAuditable;
 
     public RandomItemBuilder() {
     }
@@ -48,16 +52,29 @@ public class RandomItemBuilder {
         return withCategory();
     }
 
+    public RandomItemBuilder withId() {
+        this.withId = true;
+        return this;
+    }
+
     public Item create() {
         Member seller = Objects.requireNonNullElseGet(
                 customSeller,
                 () -> new RandomMemberBuilder().create());
         Item item = createBasicItem(seller);
+        if (withId)
+            setId(item);
         if (withCategory)
             setCategory(item);
         if (withMedia)
             generateAndBindMedia(item);
+        if (withAuditable)
+            setAuditable(item);
         return item;
+    }
+
+    private void setId(Item item) {
+        item.setId(UUID.randomUUID());
     }
 
     public List<Item> create(int count) {
@@ -90,5 +107,15 @@ public class RandomItemBuilder {
 
     public static String getTitle() {
         return RandomStringUtils.randomAlphanumeric(TITLE_LENGTH_MIN, TITLE_LENGTH_MAX);
+    }
+
+    public void setAuditable(Item item) {
+        item.setCreatedDate(LocalDateTime.now());
+        item.setLastModifiedDate(LocalDateTime.now());
+    }
+
+    public RandomItemBuilder withAuditable() {
+        withAuditable = true;
+        return this;
     }
 }

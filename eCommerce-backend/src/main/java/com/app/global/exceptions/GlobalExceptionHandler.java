@@ -1,6 +1,7 @@
 package com.app.global.exceptions;
 
 import com.app.domain.item.exceptions.CategoryNotFoundException;
+import com.app.domain.item.exceptions.ItemNotFoundException;
 import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
 import com.app.domain.member.exceptions.MemberAlreadyExistsException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
@@ -38,9 +39,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ItemNotFoundException.class)
+    ResponseEntity<ExceptionDTO> handleItemNotFound(ItemNotFoundException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ExceptionDTO> handleGeneric(Exception exception) {
         ExceptionDTO exceptionDTO = new ExceptionDTO(ExceptionMessages.GENERIC_MESSAGE);
         return new ResponseEntity<>(exceptionDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
 }

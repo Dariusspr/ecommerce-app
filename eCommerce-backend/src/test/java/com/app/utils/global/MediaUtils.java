@@ -26,7 +26,7 @@ public class MediaUtils {
 
     private static FileFormat getFileFormat() {
         FileFormat[] formats = FileFormat.values();
-        return formats[NumberUtils.getIntegerInRange(0, formats.length)];
+        return formats[NumberUtils.getIntegerInRange(0, formats.length - 1)];
     }
 
     private static String getTitle() {
