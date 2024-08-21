@@ -7,15 +7,20 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.security.Principal;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import static com.app.global.constants.UserInputConstants.*;
 
 @Entity
-@Table(name="member")
-public class Member extends AuditableEntity {
+@Table(name = "member")
+public class Member extends AuditableEntity implements UserDetails, Principal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +33,7 @@ public class Member extends AuditableEntity {
     private String username;
 
     @NotBlank
-    @Size(min =  PASSWORD_HASHED_LENGTH, max = PASSWORD_HASHED_LENGTH)
+    @Size(min = PASSWORD_HASHED_LENGTH, max = PASSWORD_HASHED_LENGTH)
     @Column(name = "member_password", nullable = false, length = PASSWORD_HASHED_LENGTH)
     private String password;
 
@@ -41,6 +46,10 @@ public class Member extends AuditableEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "member_role_id")
+    private Role role;
+
     @NotNull
     @Embedded
     @AttributeOverrides({
@@ -50,8 +59,14 @@ public class Member extends AuditableEntity {
     })
     private Media profile;
 
-    // parcel locker info
-    protected Member() {}
+    @Column(name = "member_locked", nullable = false)
+    private boolean accountLocked;
+
+    @Column(name = "member_enabled", nullable = false)
+    private boolean accountEnabled;
+
+    protected Member() {
+    }
 
     public Member(String username, String password, String email) {
         this.username = username;
@@ -81,6 +96,36 @@ public class Member extends AuditableEntity {
     @Override
     public int hashCode() {
         return Objects.hash(getUsername());
+    }
+
+    @Override
+    public String getName() {
+        return getUsername();
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.getTitle().toString());
+        return List.of(authority);
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !accountLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    public boolean isAccountEnabled() {
+        return accountEnabled;
     }
 
     // AUTO GENERATED
@@ -125,12 +170,28 @@ public class Member extends AuditableEntity {
         this.gender = gender;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
     public Media getProfile() {
         return profile;
     }
 
     public void setProfile(Media profile) {
         this.profile = profile;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public void setAccountEnabled(boolean accountEnabled) {
+        this.accountEnabled = accountEnabled;
     }
 
     @Override
@@ -141,7 +202,10 @@ public class Member extends AuditableEntity {
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", gender=" + gender +
+                ", role=" + role +
                 ", profile=" + profile +
+                ", accountLocked=" + accountLocked +
+                ", accountEnabled=" + accountEnabled +
                 '}';
     }
 
