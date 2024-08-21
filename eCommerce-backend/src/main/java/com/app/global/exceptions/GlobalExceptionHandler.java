@@ -3,8 +3,7 @@ package com.app.global.exceptions;
 import com.app.domain.item.exceptions.CategoryNotFoundException;
 import com.app.domain.item.exceptions.ItemNotFoundException;
 import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
-import com.app.domain.member.exceptions.MemberAlreadyExistsException;
-import com.app.domain.member.exceptions.MemberNotFoundException;
+import com.app.domain.member.exceptions.*;
 import com.app.global.constants.ExceptionMessages;
 import com.app.global.dtos.ExceptionDTO;
 import org.springframework.http.HttpStatus;
@@ -41,6 +40,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ItemNotFoundException.class)
     ResponseEntity<ExceptionDTO> handleItemNotFound(ItemNotFoundException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    ResponseEntity<ExceptionDTO> handleRoleNotFound(RoleNotFoundException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RoleAlreadyExistsException.class)
+    ResponseEntity<ExceptionDTO> handleRoleAlreadyExists(RoleAlreadyExistsException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadMemberCredentialsException.class)
+    ResponseEntity<ExceptionDTO> handleBadMemberCredentialsException(BadMemberCredentialsException exception) {
         ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
         return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
     }
