@@ -11,6 +11,7 @@ public class ExceptionMessages {
 
     public static final String MEMBER_NOT_FOUND_MESSAGE = "Member was not found.";
     public static final String MEMBER_ALREADY_EXISTS_MESSAGE = "A member with this username already exists.";
+    public static final String MEMBER_BAD_CREDENTIALS_MESSAGE = "Invalid username or password.";
 
     public static final String GENERIC_MESSAGE = "Something went wrong.";
 }

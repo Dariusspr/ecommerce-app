@@ -1,7 +1,6 @@
 package com.app.domain.member.controllers.publ;
 
 import com.app.domain.member.dtos.MemberSummaryDTO;
-import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.services.MemberService;
 import com.app.global.constants.RestEndpoints;
 import org.springframework.data.domain.Page;
@@ -30,11 +29,5 @@ public class MemberController {
     public ResponseEntity<Page<MemberSummaryDTO>> getMembersByUsernames(@PathVariable String username, Pageable pageable) {
         Page<MemberSummaryDTO> memberSummaryDTOPage = memberService.findAllSummariesByUsername(username, pageable);
         return ResponseEntity.ok(memberSummaryDTOPage);
-    }
-
-    @PostMapping
-    public ResponseEntity<MemberSummaryDTO> registerNewMember(@RequestBody NewMemberRequest request) {
-        MemberSummaryDTO memberSummaryDTO = memberService.registerNewMember(request);
-        return ResponseEntity.ok(memberSummaryDTO);
     }
 }

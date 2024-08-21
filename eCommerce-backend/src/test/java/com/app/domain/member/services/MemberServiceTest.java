@@ -1,6 +1,8 @@
 package com.app.domain.member.services;
 
+import com.app.domain.member.dtos.responses.AuthenticationResponse;
 import com.app.domain.member.dtos.MemberSummaryDTO;
+import com.app.domain.member.dtos.requests.AuthenticationRequest;
 import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.exceptions.MemberAlreadyExistsException;
@@ -22,20 +24,20 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.List;
 
+import static com.app.global.constants.UserInputConstants.DEFAULT_MEMBER_ROLE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @SpringBootTest
-@Tag("Integration test")
+@Tag("IntegrationTest")
 public class MemberServiceTest {
 
     private static final int PAGE_SIZE_1 = 1;
 
-
     @Autowired
     private MemberService memberService;
-    private final Pageable pageable0 = PageRequest.of(0, PAGE_SIZE_1);
 
+    private final Pageable pageable0 = PageRequest.of(0, PAGE_SIZE_1);
 
     @Test
     void findById_ok() {
@@ -171,28 +173,4 @@ public class MemberServiceTest {
                 .findAllSummariesByUsername(username, pageable0));
     }
 
-    @Test
-    void registerNewMember_ok() {
-        NewMemberRequest request = new NewMemberRequest(
-                RandomMemberBuilder.getUsername(),
-                RandomMemberBuilder.getPassword(),
-                RandomMemberBuilder.getEmail());
-
-        MemberSummaryDTO returnedMemberDto = memberService.registerNewMember(request);
-
-        assertEquals(request.username(), returnedMemberDto.username());
-        assertNotNull(returnedMemberDto.profile());
-    }
-
-    @Test
-    void registerNewMember_throwMemberAlreadyExists() {
-        Member member = new RandomMemberBuilder().create();
-        memberService.save(member);
-        NewMemberRequest request = new NewMemberRequest(
-                member.getUsername(),
-                RandomMemberBuilder.getPassword(),
-                RandomMemberBuilder.getEmail());
-
-        assertThrows(MemberAlreadyExistsException.class, () -> memberService.registerNewMember(request));
-    }
 }

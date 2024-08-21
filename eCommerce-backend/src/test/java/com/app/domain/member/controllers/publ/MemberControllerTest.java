@@ -1,15 +1,12 @@
 package com.app.domain.member.controllers.publ;
 
 import com.app.domain.member.dtos.MemberSummaryDTO;
-import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.entities.Member;
-import com.app.domain.member.exceptions.MemberAlreadyExistsException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
 import com.app.domain.member.services.MemberService;
 import com.app.global.constants.ExceptionMessages;
 import com.app.utils.domain.member.RandomMemberBuilder;
-import com.app.utils.global.StringUtils;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +30,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Tag("Unit test")
+@Tag("UnitTest")
 @WebMvcTest(controllers = MemberController.class)
 @ExtendWith(MockitoExtension.class)
 public class MemberControllerTest {
@@ -47,7 +44,6 @@ public class MemberControllerTest {
     private MemberService memberService;
 
     private final Pageable pageable = PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE);
-    ;
 
     @Test
     void getMemberById_returnOk() throws Exception {
@@ -135,43 +131,5 @@ public class MemberControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.MEMBER_NOT_FOUND_MESSAGE)));
-    }
-
-    @Test
-    void registerNewMember_returnOk() throws Exception {
-        final Member member = new RandomMemberBuilder().withId().create();
-        final NewMemberRequest request = new NewMemberRequest(member.getUsername(),
-                member.getPassword(),
-                member.getEmail());
-        final MemberSummaryDTO memberSummaryDTO = MemberMapper.toMemberSummaryDTO(member);
-        final String requestJson = StringUtils.toJSON(request);
-        given(memberService.registerNewMember(request)).willReturn(memberSummaryDTO);
-
-        mockMvc.perform(post(MemberController.BASE_URL)
-                        .content(requestJson)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(member.getId())))
-                .andExpect(jsonPath("$.username", is(member.getUsername())))
-                .andExpect(jsonPath("$.profile.title", is(member.getProfile().title())))
-                .andExpect(jsonPath("$.profile.url", is(member.getProfile().url())))
-                .andExpect(jsonPath("$.profile.format", is(member.getProfile().format().toString())));
-    }
-
-    @Test
-    void registerNewMember_returnBadRequest() throws Exception {
-        final NewMemberRequest request = new NewMemberRequest(RandomMemberBuilder.getUsername(),
-                RandomMemberBuilder.getPassword(),
-                RandomMemberBuilder.getEmail());
-        final String requestJson = StringUtils.toJSON(request);
-        doThrow(new MemberAlreadyExistsException()).when(memberService).registerNewMember(any());
-
-        mockMvc.perform(post(MemberController.BASE_URL)
-                        .content(requestJson)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message", is(ExceptionMessages.MEMBER_ALREADY_EXISTS_MESSAGE)));
     }
 }

@@ -1,9 +1,7 @@
 package com.app.domain.member.services;
 
 import com.app.domain.member.dtos.MemberSummaryDTO;
-import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.entities.Member;
-import com.app.domain.member.exceptions.MemberAlreadyExistsException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
 import com.app.domain.member.repositories.MemberRepository;
@@ -31,17 +29,6 @@ public class MemberService {
                 .orElseThrow(MemberNotFoundException::new);
     }
 
-    // DTO methods
-
-    @Transactional
-    public MemberSummaryDTO registerNewMember(NewMemberRequest request) {
-        if (memberExists(request.username())) {
-            throw new MemberAlreadyExistsException();
-        }
-        Member member = MemberMapper.toMember(request);
-        return save(member);
-    }
-
     @Transactional
     public MemberSummaryDTO save(Member member) {
         return MemberMapper.toMemberSummaryDTO(memberRepository.save(member));
@@ -62,8 +49,11 @@ public class MemberService {
         return memberPage.map(MemberMapper::toMemberSummaryDTO);
     }
 
+    public Member findByUsername(String username) {
+        return memberRepository.findByUsername(username).orElseThrow(MemberNotFoundException::new);
+    }
 
-    private boolean memberExists(String username) {
+    public boolean memberExists(String username) {
         return memberRepository.findByUsername(username).isPresent();
     }
 }
