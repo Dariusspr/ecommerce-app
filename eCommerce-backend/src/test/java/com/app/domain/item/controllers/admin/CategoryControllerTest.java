@@ -7,15 +7,16 @@ import com.app.domain.item.exceptions.CategoryNotFoundException;
 import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
 import com.app.domain.item.mappers.CategoryMapper;
 import com.app.domain.item.services.CategoryService;
+import com.app.global.config.security.JwtAuthenticationFilter;
 import com.app.global.constants.ExceptionMessages;
 import com.app.utils.domain.item.RandomCategoryBuilder;
 import com.app.utils.global.NumberUtils;
 import com.app.utils.global.StringUtils;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -30,11 +31,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Tag("Unit test")
-@WebMvcTest
+@WebMvcTest(controllers = com.app.domain.item.controllers.admin.CategoryController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
 public class CategoryControllerTest {
-
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,22 +42,27 @@ public class CategoryControllerTest {
     @MockBean
     private CategoryService categoryService;
 
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Test
     void deleteCategory_returnOk() throws Exception {
         final long id = 1;
         doNothing().when(categoryService).deleteById(id);
 
-        mockMvc.perform(delete(CategoryController.BASE_URL + "/" + id).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(delete(CategoryController.BASE_URL + "/" + id)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void deleteCategory_returnException() throws Exception {
+    void deleteCategory_returnBadRequest() throws Exception {
         final long id = 1;
         doNothing().when(categoryService).deleteById(id);
         doThrow(new CategoryNotFoundException()).when(categoryService).deleteById(id);
 
-        mockMvc.perform(delete(CategoryController.BASE_URL + "/" + id).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(delete(CategoryController.BASE_URL + "/" + id)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.CATEGORY_NOT_FOUND_MESSAGE)));
@@ -74,7 +79,9 @@ public class CategoryControllerTest {
         given(categoryService.addNewCategoryDTO(request)).willReturn(categoryDTO);
 
 
-        mockMvc.perform(post(CategoryController.BASE_URL).contentType(MediaType.APPLICATION_JSON).content(requestJSON))
+        mockMvc.perform(post(CategoryController.BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(categoryDTO.id())))
                 .andExpect(jsonPath("$.title", is(categoryDTO.title())));
@@ -85,7 +92,9 @@ public class CategoryControllerTest {
         String requestJSON = StringUtils.toJSON(new NewCategoryRequest(NumberUtils.getId(), RandomCategoryBuilder.getTitle()));
         doThrow(new ParentCategoryNotFoundException()).when(categoryService).addNewCategoryDTO(any());
 
-        mockMvc.perform(post(CategoryController.BASE_URL).contentType(MediaType.APPLICATION_JSON).content(requestJSON))
+        mockMvc.perform(post(CategoryController.BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.PARENT_CATEGORY_NOT_FOUND_MESSAGE)));

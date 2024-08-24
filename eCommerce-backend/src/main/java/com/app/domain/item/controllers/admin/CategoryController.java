@@ -6,10 +6,12 @@ import com.app.domain.item.services.CategoryService;
 import com.app.global.constants.RestEndpoints;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController("adminCategoryController")
 @RequestMapping(CategoryController.BASE_URL)
+@PreAuthorize("hasRole('ADMIN')")
 public class CategoryController {
     public static final String BASE_URL = RestEndpoints.ADMIN_API + "/categories";
 
@@ -21,8 +23,7 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryDTO> addNewCategory(@RequestBody NewCategoryRequest request) {
-        ResponseEntity<CategoryDTO> responseEntity = ResponseEntity.ok(categoryService.addNewCategoryDTO(request));
-        return responseEntity;
+        return ResponseEntity.ok(categoryService.addNewCategoryDTO(request));
     }
 
     @DeleteMapping("/{categoryId}")

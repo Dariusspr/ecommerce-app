@@ -4,14 +4,15 @@ import com.app.domain.member.dtos.MemberSummaryDTO;
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
+import com.app.domain.member.services.JwtService;
 import com.app.domain.member.services.MemberService;
 import com.app.global.constants.ExceptionMessages;
 import com.app.utils.domain.member.RandomMemberBuilder;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -30,8 +31,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Tag("UnitTest")
 @WebMvcTest(controllers = MemberController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
 public class MemberControllerTest {
     private static final int PAGE_NUMBER_0 = 0;
@@ -42,6 +43,9 @@ public class MemberControllerTest {
 
     @MockBean
     private MemberService memberService;
+
+    @MockBean
+    private JwtService jwtService;
 
     private final Pageable pageable = PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE);
 

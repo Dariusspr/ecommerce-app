@@ -1,11 +1,7 @@
 package com.app.domain.member.services;
 
-import com.app.domain.member.dtos.responses.AuthenticationResponse;
 import com.app.domain.member.dtos.MemberSummaryDTO;
-import com.app.domain.member.dtos.requests.AuthenticationRequest;
-import com.app.domain.member.dtos.requests.NewMemberRequest;
 import com.app.domain.member.entities.Member;
-import com.app.domain.member.exceptions.MemberAlreadyExistsException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
 import com.app.global.enums.Gender;
@@ -13,7 +9,6 @@ import com.app.utils.domain.member.RandomMemberBuilder;
 import com.app.utils.global.NumberUtils;
 import com.app.utils.global.StringUtils;
 import jakarta.validation.ConstraintViolationException;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,12 +19,10 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.List;
 
-import static com.app.global.constants.UserInputConstants.DEFAULT_MEMBER_ROLE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @SpringBootTest
-@Tag("IntegrationTest")
 public class MemberServiceTest {
 
     private static final int PAGE_SIZE_1 = 1;

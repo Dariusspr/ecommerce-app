@@ -6,15 +6,16 @@ import com.app.domain.item.entities.Item;
 import com.app.domain.item.exceptions.ItemNotFoundException;
 import com.app.domain.item.mappers.ItemMapper;
 import com.app.domain.item.services.ItemService;
+import com.app.global.config.security.JwtAuthenticationFilter;
 import com.app.global.constants.ExceptionMessages;
 import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.global.NumberUtils;
 import com.app.utils.global.StringUtils;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -35,9 +36,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Tag("Unit test")
 @WebMvcTest(controllers = ItemController.class)
 @ExtendWith(MockitoExtension.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class ItemControllerTest {
     private static final int PAGE_NUMBER_0 = 0;
     private static final int PAGE_SIZE = 20;
@@ -47,6 +48,9 @@ public class ItemControllerTest {
 
     @MockBean
     private ItemService itemService;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private final int itemCount = 5;
     private final Pageable pageable = PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE);
