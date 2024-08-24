@@ -62,6 +62,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AccountNotEnabledException.class)
+    ResponseEntity<ExceptionDTO> handleAccountNotEnabledException(AccountNotEnabledException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ExpiredVerificationCodeException.class)
+    ResponseEntity<ExceptionDTO> handleExpiredVerificationCodeException(ExpiredVerificationCodeException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.GONE);
+    }
+
+    @ExceptionHandler(InvalidVerificationTokenException.class)
+    ResponseEntity<ExceptionDTO> handleInvalidVerificationTokenException(InvalidVerificationTokenException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ExceptionDTO> handleGeneric(Exception exception) {
         ExceptionDTO exceptionDTO = new ExceptionDTO(ExceptionMessages.GENERIC_MESSAGE);

@@ -5,7 +5,8 @@ import com.app.global.enums.FileFormat;
 import com.app.global.enums.Gender;
 
 public class UserInputConstants {
-    private UserInputConstants() {}
+    private UserInputConstants() {
+    }
 
     public static final int PRICE_PRECISION = 8;
     public static final int PRICE_SCALE = 2;
@@ -17,8 +18,10 @@ public class UserInputConstants {
     public static final int USERNAME_LENGTH_MAX = 30;
 
     public static final int PASSWORD_LENGTH_MIN = 6;
-    public static final int PASSWORD_LENGTH_MAX = 255;;
+    public static final int PASSWORD_LENGTH_MAX = 255;
     public static final int PASSWORD_HASHED_LENGTH = 60;
+
+    public static final int VERIFICATION_TOKEN_CODE_LENGTH = 6;
 
     public static final Gender DEFAULT_MEMBER_GENDER = Gender.OTHER;
 
