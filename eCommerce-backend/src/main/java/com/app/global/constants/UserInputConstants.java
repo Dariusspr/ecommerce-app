@@ -34,6 +34,6 @@ public class UserInputConstants {
 
     public static final int COMMENT_CONTENT_LENGTH_MIN = 3;
 
-    public static final Role.RoleTitle DEFAULT_MEMBER_ROLE = Role.RoleTitle.ADMIN;
+    public static final Role.RoleTitle DEFAULT_MEMBER_ROLE = Role.RoleTitle.MEMBER;
 
 }

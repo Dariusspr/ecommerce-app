@@ -13,11 +13,6 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
 
-//    @PostConstruct
-//    public void InitRoles_TEMPORARY() { // TODO
-//        create(DEFAULT_MEMBER_ROLE);
-//    }
-
     public RoleService(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
     }
