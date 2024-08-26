@@ -21,4 +21,5 @@ public class ExceptionMessages {
     public static final String ACCOUNT_NOT_ENABLED_MESSAGE = "Your account is not verified yet. A verification code has been sent to your inbox.";
 
     public static final String GENERIC_MESSAGE = "Something went wrong.";
+    public static final String FORBIDDEN_MESSAGE = "You do not have permission to access this resource.";
 }

@@ -65,6 +65,15 @@ public class Item extends AuditableEntity {
         this.seller = seller;
     }
 
+    public Item(String title, BigDecimal price, String description, Member seller, Category category, List<ItemMedia> media) {
+        this.title = title;
+        this.price = price;
+        this.description = description;
+        this.category = category;
+        this.seller = seller;
+        this.mediaList = media;
+    }
+
     public void addMedia(ItemMedia media) {
         if (media == null) {
             throw new IllegalArgumentException("'media' is null");

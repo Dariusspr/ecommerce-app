@@ -58,7 +58,6 @@ public class CategoryControllerTest {
     @Test
     void deleteCategory_returnBadRequest() throws Exception {
         final long id = 1;
-        doNothing().when(categoryService).deleteById(id);
         doThrow(new CategoryNotFoundException()).when(categoryService).deleteById(id);
 
         mockMvc.perform(delete(CategoryController.BASE_URL + "/" + id)

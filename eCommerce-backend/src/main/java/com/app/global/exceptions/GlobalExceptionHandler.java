@@ -80,11 +80,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exceptionDTO, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    ResponseEntity<ExceptionDTO> handleForbiddenException(ForbiddenException exception) {
+        ExceptionDTO exceptionDTO = new ExceptionDTO(exception.getMessage());
+        return new ResponseEntity<>(exceptionDTO, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ExceptionDTO> handleGeneric(Exception exception) {
         ExceptionDTO exceptionDTO = new ExceptionDTO(ExceptionMessages.GENERIC_MESSAGE);
         return new ResponseEntity<>(exceptionDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-
 }

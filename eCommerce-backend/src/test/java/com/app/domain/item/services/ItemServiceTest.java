@@ -2,6 +2,8 @@ package com.app.domain.item.services;
 
 import com.app.domain.item.dtos.ItemDetailedDTO;
 import com.app.domain.item.dtos.ItemSummaryDTO;
+import com.app.domain.item.dtos.requests.ModifiedItemRequest;
+import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.entities.Item;
 import com.app.domain.item.exceptions.ItemNotFoundException;
@@ -16,15 +18,21 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @SpringBootTest
@@ -38,6 +46,11 @@ public class ItemServiceTest {
     private MemberService memberService;
     @Autowired
     private CategoryService categoryService;
+
+    @MockBean
+    private Authentication authentication;
+    @MockBean
+    private SecurityContext securityContext;
 
     private final Pageable pageable0 = PageRequest.of(0, PAGE_SIZE);
 
@@ -93,12 +106,28 @@ public class ItemServiceTest {
     void deleteById_ok() {
         Item item = new RandomItemBuilder().create();
         memberService.save(item.getSeller());
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(authentication);
+        given(authentication.getPrincipal()).willReturn(item.getSeller());
         itemService.save(item);
         assertDoesNotThrow(() -> itemService.findById(item.getId()));
 
         itemService.deleteById(item.getId());
 
         assertThrows(ItemNotFoundException.class, () -> itemService.findById(item.getId()));
+    }
+
+    @Test
+    void deleteById_notSameMember_throwsIllegalState() {
+        Item item = new RandomItemBuilder().create();
+        memberService.save(item.getSeller());
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(authentication);
+        given(authentication.getPrincipal()).willReturn(new RandomMemberBuilder().create());
+        itemService.save(item);
+        assertDoesNotThrow(() -> itemService.findById(item.getId()));
+
+        assertThrows(IllegalStateException.class, () -> itemService.deleteById(item.getId()));
     }
 
     @Test
@@ -213,5 +242,68 @@ public class ItemServiceTest {
 
         assertEquals(PAGE_SIZE, returnedItemPage1.getNumberOfElements());
         assertEquals(PAGE_SIZE, returnedItemPage2.getNumberOfElements());
+    }
+
+
+    @Test
+    void create_ok() {
+        // setup seller
+        Member seller = new RandomMemberBuilder().create();
+        memberService.save(seller);
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(authentication);
+        given(authentication.getPrincipal()).willReturn(seller);
+        // setup initial item request
+        Item item = new RandomItemBuilder().create();
+        NewItemRequest request = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
+
+        ItemSummaryDTO itemSummaryDTO = itemService.create(request);
+
+        assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO.id()));
+    }
+
+    @Test
+    void modify_ok() {
+        // setup seller
+        Member seller = new RandomMemberBuilder().create();
+        memberService.save(seller);
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(authentication);
+        given(authentication.getPrincipal()).willReturn(seller);
+        // setup initial item request
+        Item item = new RandomItemBuilder().create();
+        NewItemRequest request = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
+        ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
+        assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
+        // setup modification request
+        ModifiedItemRequest modifiedItemRequest = new ModifiedItemRequest("NewTitle", null, null, null, null);
+
+        ItemSummaryDTO itemSummaryDTO2 = itemService.modify(itemSummaryDTO1.id(), modifiedItemRequest);
+
+        assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO2.id()));
+        assertEquals(itemSummaryDTO1.id(), itemSummaryDTO2.id());
+        assertNotEquals(itemSummaryDTO1.title(), itemSummaryDTO2.title());
+    }
+
+    @Test
+    void modify_notSameMember_throwsIllegalState() {
+        // setup seller
+        Member seller = new RandomMemberBuilder().create();
+        memberService.save(seller);
+        SecurityContextHolder.setContext(securityContext);
+        given(securityContext.getAuthentication()).willReturn(authentication);
+        given(authentication.getPrincipal()).willReturn(seller);
+        // setup initial item request
+        Item item = new RandomItemBuilder().create();
+        NewItemRequest request = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
+        ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
+        assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
+        // setup modification request
+        ModifiedItemRequest modifiedItemRequest = new ModifiedItemRequest("NewTitle", null, null, null, null);
+        // different member
+        Member otherSeller = new RandomMemberBuilder().create();
+        given(authentication.getPrincipal()).willReturn(otherSeller);
+
+        assertThrows(IllegalStateException.class, () -> itemService.modify(itemSummaryDTO1.id(), modifiedItemRequest));
     }
 }

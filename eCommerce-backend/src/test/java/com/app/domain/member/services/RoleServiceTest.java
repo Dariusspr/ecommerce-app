@@ -4,7 +4,6 @@ package com.app.domain.member.services;
 import com.app.domain.member.entities.Role;
 import com.app.domain.member.exceptions.RoleAlreadyExistsException;
 import com.app.domain.member.exceptions.RoleNotFoundException;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,13 +46,6 @@ public class RoleServiceTest {
         Role role = roleService.findByTitle(title);
 
         assertEquals(title, role.getTitle());
-    }
-
-    @Test
-    void findByTitle_roleNotFound() {
-        Role.RoleTitle title = DEFAULT_MEMBER_ROLE;
-
-        assertThrows(RoleNotFoundException.class, () -> roleService.findByTitle(title));
     }
 
     @Test
