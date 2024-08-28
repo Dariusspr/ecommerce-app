@@ -22,6 +22,7 @@ public class ItemMedia {
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "title", column = @Column(name = "media_title", nullable = false)),
+            @AttributeOverride(name = "key", column = @Column(name = "member_key", nullable = false)),
             @AttributeOverride(name = "url", column = @Column(name = "media_url", nullable = false)),
             @AttributeOverride(name = "format", column = @Column(name = "media_format", nullable = false)),
     })

@@ -26,8 +26,9 @@ public class UserInputConstants {
     public static final Gender DEFAULT_MEMBER_GENDER = Gender.OTHER;
 
     public static final String DEFAULT_MEMBER_PROFILE_TITLE = "default-profile";
-    public static final String DEFAULT_MEMBER_PROFILE_URL = "default-member-url";
-    public static final FileFormat DEFAULT_MEMBER_PROFILE_FORMAT = FileFormat.PNG;
+    public static final String DEFAULT_MEMBER_PROFILE_KEY = "default-profile-img-key";
+    public static final String DEFAULT_MEMBER_PROFILE_URL = "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg?20200418092106";
+    public static final FileFormat DEFAULT_MEMBER_PROFILE_FORMAT = FileFormat.JPG;
 
     public static final int RATING_MIN = 1;
     public static final int RATING_MAX = 10;

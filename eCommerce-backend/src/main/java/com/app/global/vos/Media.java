@@ -1,7 +1,6 @@
 package com.app.global.vos;
 
 import com.app.global.enums.FileFormat;
-import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,6 +11,9 @@ import jakarta.validation.constraints.NotNull;
 public record Media(
         @NotBlank
         String title,
+
+        @NotBlank
+        String key,
 
         @NotBlank
         String url,

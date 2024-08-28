@@ -20,6 +20,10 @@ public class ExceptionMessages {
     public static final String VERIFICATION_NOT_FOUND_MESSAGE = "Verification token not found.";
     public static final String ACCOUNT_NOT_ENABLED_MESSAGE = "Your account is not verified yet. A verification code has been sent to your inbox.";
 
-    public static final String GENERIC_MESSAGE = "Something went wrong.";
     public static final String FORBIDDEN_MESSAGE = "You do not have permission to access this resource.";
+    public static final String UNSUPPORTED_FILE_FORMAT_MESSAGE = "This file format is not supported.";
+    public static final String FAILED_TO_UPLOAD_FILE_MESSAGE = "Failed to upload file.";
+
+    public static final String GENERIC_MESSAGE = "Something went wrong.";
+
 }

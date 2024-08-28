@@ -5,6 +5,8 @@ import com.app.global.vos.Media;
 import org.apache.commons.lang3.RandomStringUtils;
 
 
+import java.util.UUID;
+
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MAX;
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MIN;
 
@@ -21,7 +23,7 @@ public class MediaUtils {
     public static Media getMedia(FileFormat fileFormat) {
         String title = getTitle();
         String url = getUrl();
-        return new Media(title, url ,fileFormat);
+        return new Media(title, UUID.randomUUID().toString(), url ,fileFormat);
     }
 
     private static FileFormat getFileFormat() {

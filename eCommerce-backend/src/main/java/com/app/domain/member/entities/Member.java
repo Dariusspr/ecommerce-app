@@ -54,6 +54,7 @@ public class Member extends AuditableEntity implements UserDetails, Principal {
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "title", column = @Column(name = "member_profile_title", nullable = false)),
+            @AttributeOverride(name = "key", column = @Column(name = "member_profile_key", nullable = false)),
             @AttributeOverride(name = "url", column = @Column(name = "member_profile_url", nullable = false)),
             @AttributeOverride(name = "format", column = @Column(name = "member_profile_format", nullable = false)),
     })
@@ -73,7 +74,7 @@ public class Member extends AuditableEntity implements UserDetails, Principal {
         this.password = password;
         this.email = email;
         this.gender = DEFAULT_MEMBER_GENDER;
-        this.profile = new Media(DEFAULT_MEMBER_PROFILE_TITLE, DEFAULT_MEMBER_PROFILE_URL, DEFAULT_MEMBER_PROFILE_FORMAT);
+        this.profile = new Media(DEFAULT_MEMBER_PROFILE_TITLE, DEFAULT_MEMBER_PROFILE_KEY, DEFAULT_MEMBER_PROFILE_URL, DEFAULT_MEMBER_PROFILE_FORMAT);
     }
 
 
@@ -126,6 +127,10 @@ public class Member extends AuditableEntity implements UserDetails, Principal {
 
     public boolean isAccountEnabled() {
         return accountEnabled;
+    }
+
+    public boolean isAdmin() {
+        return role != null && Objects.equals(role.getTitle(), Role.RoleTitle.ADMIN);
     }
 
     // AUTO GENERATED
@@ -208,5 +213,4 @@ public class Member extends AuditableEntity implements UserDetails, Principal {
                 ", accountEnabled=" + accountEnabled +
                 '}';
     }
-
 }
