@@ -6,9 +6,7 @@ import com.app.domain.item.dtos.ItemSummaryDTO;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.entities.Item;
-import com.app.domain.item.entities.ItemMedia;
 import com.app.domain.member.entities.Member;
-import com.app.global.vos.Media;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -46,8 +44,7 @@ public class ItemMapper {
         return new ItemSummaryDTO(item.getId(), item.getTitle(), item.getPrice(), mediaDTOList);
     }
 
-    public static Item toItem(NewItemRequest request, Category category, Member seller, List<Media> media) {
-        List<ItemMedia> itemMediaList = media.stream().map(ItemMediaMapper::toItemMedia).toList();
-        return new Item(request.title(), request.price(), request.description(), seller, category, itemMediaList);
+    public static Item toItem(NewItemRequest request, Category category, Member seller) {
+        return new Item(request.title(), request.price(), request.description(), seller, category);
     }
 }

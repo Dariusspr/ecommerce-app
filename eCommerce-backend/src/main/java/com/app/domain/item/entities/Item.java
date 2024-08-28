@@ -42,7 +42,7 @@ public class Item extends AuditableEntity {
     @JoinColumn(name = "member_id")
     private Member seller;
 
-    @OneToMany(mappedBy = "item")
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private List<ItemMedia> mediaList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,13 +65,16 @@ public class Item extends AuditableEntity {
         this.seller = seller;
     }
 
-    public Item(String title, BigDecimal price, String description, Member seller, Category category, List<ItemMedia> media) {
+    public Item(String title, BigDecimal price, String description, Member seller, Category category) {
         this.title = title;
         this.price = price;
         this.description = description;
         this.category = category;
         this.seller = seller;
-        this.mediaList = media;
+    }
+
+    public void addAllMedia(List<ItemMedia> itemMediaList) {
+        itemMediaList.forEach(this::addMedia);
     }
 
     public void addMedia(ItemMedia media) {
@@ -164,7 +167,7 @@ public class Item extends AuditableEntity {
     @Override
     public String toString() {
         return "Item{" +
-                "id=" + id +
+                "key=" + id +
                 ", title='" + title + '\'' +
                 ", price=" + price +
                 ", description='" + description + '\'' +

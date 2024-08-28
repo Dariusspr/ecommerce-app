@@ -1,9 +1,11 @@
 package com.app.domain.item.controllers.members;
 
+import com.app.domain.item.dtos.ItemSummaryDTO;
 import com.app.domain.item.dtos.requests.ModifiedItemRequest;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.services.ItemService;
 import com.app.global.constants.RestEndpoints;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,13 +25,13 @@ public class ItemController {
         this.itemService = itemService;
     }
 
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody NewItemRequest request) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ItemSummaryDTO> create(NewItemRequest request) {
         return ResponseEntity.ok(itemService.create(request));
     }
 
-    @PutMapping("/{itemId}")
-    public ResponseEntity<?> modify(@PathVariable UUID itemId, @RequestBody ModifiedItemRequest request) {
+    @PutMapping(value="/{itemId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ItemSummaryDTO> modify(@PathVariable UUID itemId, ModifiedItemRequest request) {
         return ResponseEntity.ok(itemService.modify(itemId, request));
     }
 

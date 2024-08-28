@@ -10,6 +10,8 @@ import com.app.domain.item.exceptions.ItemNotFoundException;
 import com.app.domain.item.mappers.ItemMapper;
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.services.MemberService;
+import com.app.global.exceptions.ForbiddenException;
+import com.app.global.services.MediaService;
 import com.app.utils.domain.item.RandomCategoryBuilder;
 import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.domain.member.RandomMemberBuilder;
@@ -51,6 +53,9 @@ public class ItemServiceTest {
     private Authentication authentication;
     @MockBean
     private SecurityContext securityContext;
+
+    @MockBean
+    private MediaService mediaService;
 
     private final Pageable pageable0 = PageRequest.of(0, PAGE_SIZE);
 
@@ -118,7 +123,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void deleteById_notSameMember_throwsIllegalState() {
+    void deleteById_notSameMember_throwForbiddenException() {
         Item item = new RandomItemBuilder().create();
         memberService.save(item.getSeller());
         SecurityContextHolder.setContext(securityContext);
@@ -127,7 +132,7 @@ public class ItemServiceTest {
         itemService.save(item);
         assertDoesNotThrow(() -> itemService.findById(item.getId()));
 
-        assertThrows(IllegalStateException.class, () -> itemService.deleteById(item.getId()));
+        assertThrows(ForbiddenException.class, () -> itemService.deleteById(item.getId()));
     }
 
     @Test
@@ -263,7 +268,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void modify_ok() {
+    void modify__newTitle_ok() {
         // setup seller
         Member seller = new RandomMemberBuilder().create();
         memberService.save(seller);
@@ -286,7 +291,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void modify_notSameMember_throwsIllegalState() {
+    void modify_notSameMember_throwForbiddenException() {
         // setup seller
         Member seller = new RandomMemberBuilder().create();
         memberService.save(seller);
@@ -304,6 +309,6 @@ public class ItemServiceTest {
         Member otherSeller = new RandomMemberBuilder().create();
         given(authentication.getPrincipal()).willReturn(otherSeller);
 
-        assertThrows(IllegalStateException.class, () -> itemService.modify(itemSummaryDTO1.id(), modifiedItemRequest));
+        assertThrows(ForbiddenException.class, () -> itemService.modify(itemSummaryDTO1.id(), modifiedItemRequest));
     }
 }

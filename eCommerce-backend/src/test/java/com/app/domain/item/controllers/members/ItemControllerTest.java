@@ -11,7 +11,6 @@ import com.app.global.config.security.JwtAuthenticationFilter;
 import com.app.global.constants.ExceptionMessages;
 import com.app.global.exceptions.ForbiddenException;
 import com.app.utils.domain.item.RandomItemBuilder;
-import com.app.utils.global.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,9 +19,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
@@ -73,12 +75,21 @@ public class ItemControllerTest {
         Item item = new RandomItemBuilder().create();
         NewItemRequest itemRequest = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
         ItemSummaryDTO itemSummaryDTO = ItemMapper.toItemSummaryDTO(item);
-        String requestJSON = StringUtils.toJSON(itemRequest);
-        given(itemService.create(itemRequest)).willReturn(itemSummaryDTO);
+        MockMultipartFile mockFile = new MockMultipartFile(
+                "media",
+                "image.png",
+                "image.png",
+                "<Image>".getBytes()
+        );
+        given(itemService.create(any(NewItemRequest.class))).willReturn(itemSummaryDTO);
 
-        mockMvc.perform(post(ItemController.BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJSON))
+        mockMvc.perform(MockMvcRequestBuilders.multipart(ItemController.BASE_URL)
+                        .file(mockFile)
+                        .param("title", itemRequest.title())
+                        .param("price", itemRequest.price().toString())
+                        .param("description", itemRequest.description())
+                        .param("categoryId", itemRequest.categoryId() == null ? "" : itemRequest.categoryId().toString())
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemSummaryDTO.id())))
                 .andExpect(jsonPath("$.title", is(itemRequest.title())))
@@ -90,12 +101,21 @@ public class ItemControllerTest {
     void create_returnException() throws Exception {
         Item item = new RandomItemBuilder().create();
         NewItemRequest itemRequest = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
-        String requestJSON = StringUtils.toJSON(itemRequest);
+        MockMultipartFile mockFile = new MockMultipartFile(
+                "media",
+                "image.png",
+                "image.png",
+                "<Image>".getBytes()
+        );
         doThrow(new ItemNotFoundException()).when(itemService).create(any());
 
-        mockMvc.perform(post(ItemController.BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJSON))
+        mockMvc.perform(MockMvcRequestBuilders.multipart(ItemController.BASE_URL)
+                        .file(mockFile)
+                        .param("title", itemRequest.title())
+                        .param("price", itemRequest.price().toString())
+                        .param("description", itemRequest.description())
+                        .param("categoryId", itemRequest.categoryId() == null ? "" : itemRequest.categoryId().toString())
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.ITEM_NOT_FOUND_MESSAGE)));
@@ -104,32 +124,58 @@ public class ItemControllerTest {
     @Test
     void modify_returnOk() throws Exception {
         Item item = new RandomItemBuilder().withId().create();
-        ModifiedItemRequest itemRequest = new ModifiedItemRequest(item.getTitle(), null, null, null, null);
+        MockMultipartFile mockFile = new MockMultipartFile(
+                "media",
+                "test-image.png",
+                "image/png",
+                "<Image>".getBytes()
+        );
+        ModifiedItemRequest itemRequest = new ModifiedItemRequest(item.getTitle(), null, null, List.of(mockFile), null);
         ItemSummaryDTO itemSummaryDTO = ItemMapper.toItemSummaryDTO(item);
-        String requestJSON = StringUtils.toJSON(itemRequest);
+
         given(itemService.modify(item.getId(), itemRequest)).willReturn(itemSummaryDTO);
 
-
-        mockMvc.perform(put(ItemController.BASE_URL + "/" + item.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJSON))
+        mockMvc.perform(MockMvcRequestBuilders.multipart(ItemController.BASE_URL + "/" + item.getId())
+                        .file(mockFile)
+                        .param("title", itemRequest.title())
+                        .param("price", itemRequest.price() == null ? "" : itemRequest.price().toString())
+                        .param("description", itemRequest.description())
+                        .param("categoryId", itemRequest.categoryId() == null ? "" : itemRequest.categoryId().toString())
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        })
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemSummaryDTO.id().toString())))
                 .andExpect(jsonPath("$.title", is(itemRequest.title())))
-                .andExpect(jsonPath("$.price", is(item.getPrice().doubleValue())))
+                .andExpect(jsonPath("$.price", is(itemSummaryDTO.price().doubleValue())))
                 .andExpect(jsonPath("$.media", is(Collections.emptyList())));
     }
 
     @Test
     void modify_returnException() throws Exception {
         Item item = new RandomItemBuilder().withId().create();
-        ModifiedItemRequest itemRequest = new ModifiedItemRequest(item.getTitle(), null, null, null, null);
-        String requestJSON = StringUtils.toJSON(itemRequest);
-        doThrow(new ForbiddenException()).when(itemService).modify(item.getId(), itemRequest);
+        MockMultipartFile mockFile = new MockMultipartFile(
+                "media",
+                "test-image.png",
+                "image/png",
+                "<Image>".getBytes()
+        );
+        ModifiedItemRequest itemRequest = new ModifiedItemRequest(item.getTitle(), null, null, List.of(mockFile), null);
+        doThrow(new ForbiddenException()).when(itemService).modify(any(), any());
 
-        mockMvc.perform(put(ItemController.BASE_URL + "/" + item.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJSON))
+        mockMvc.perform(MockMvcRequestBuilders.multipart(ItemController.BASE_URL + "/" + item.getId())
+                        .file(mockFile)
+                        .param("title", itemRequest.title())
+                        .param("price", itemRequest.price() == null ? "" : itemRequest.price().toString())
+                        .param("description", itemRequest.description())
+                        .param("categoryId", itemRequest.categoryId() == null ? "" : itemRequest.categoryId().toString())
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        })
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.FORBIDDEN_MESSAGE)));

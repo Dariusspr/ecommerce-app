@@ -6,18 +6,22 @@ import com.app.domain.item.dtos.requests.ModifiedItemRequest;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.entities.Item;
+import com.app.domain.item.entities.ItemMedia;
 import com.app.domain.item.exceptions.ItemNotFoundException;
 import com.app.domain.item.mappers.ItemMapper;
+import com.app.domain.item.mappers.ItemMediaMapper;
 import com.app.domain.item.repositories.ItemRepository;
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.services.MemberService;
 import com.app.global.exceptions.ForbiddenException;
-import com.app.global.utils.AuthUtil;
+import com.app.global.utils.AuthUtils;
+import com.app.global.services.MediaService;
 import com.app.global.vos.Media;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -28,54 +32,35 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final CategoryService categoryService;
     private final MemberService memberService;
+    private final MediaService mediaService;
+    private final ItemMediaService itemMediaService;
 
-    public ItemService(ItemRepository itemRepository, CategoryService categoryService, MemberService memberService) {
+    public ItemService(ItemRepository itemRepository, CategoryService categoryService, MemberService memberService, MediaService mediaService, ItemMediaService itemMediaService) {
         this.itemRepository = itemRepository;
         this.categoryService = categoryService;
         this.memberService = memberService;
+        this.mediaService = mediaService;
+        this.itemMediaService = itemMediaService;
     }
 
     @Transactional
     public ItemSummaryDTO create(NewItemRequest request) {
-        Member seller = AuthUtil.getAuthenticated();
-        List<Media> mediaList = Collections.emptyList();
-//        List<Media> mediaList = AwsS3Service.upload(request.media()); // TODO
+        Member seller = AuthUtils.getAuthenticated();
         Category category = request.categoryId() != null ? categoryService.findById(request.categoryId()) : null;
-        Item item = ItemMapper.toItem(request, category, seller, mediaList);
+        Item item = ItemMapper.toItem(request, category, seller);
+        List<ItemMedia> itemMediaList = uploadAndMapMedia(request.media());
+        item.addAllMedia(itemMediaList);
         return save(item);
     }
 
     @Transactional
     public ItemSummaryDTO modify(UUID itemId, ModifiedItemRequest request) {
-        Member modifier = AuthUtil.getAuthenticated();
         Item item = findById(itemId);
-        Member originalSeller = item.getSeller();
-        if (!modifier.equals(originalSeller)) {
+        if (isNotAllowedItemModifier(item.getSeller())) {
             throw new ForbiddenException();
         }
-
         updateItemValues(item, request);
-
         return save(item);
-    }
-
-    private void updateItemValues(Item item, ModifiedItemRequest request) {
-        if (request.title() != null) {
-            item.setTitle(request.title());
-        }
-        if (request.price() != null) {
-            item.setPrice(request.price());
-        }
-        if (request.description() != null) {
-            item.setDescription(request.description());
-        }
-        if (request.media() != null) {
-            item.setMediaList(Collections.emptyList()); // TODO
-        }
-        if (request.categoryId() != null) {
-            Category category = categoryService.findById(request.categoryId());
-            item.setCategory(category);
-        }
     }
 
     @Transactional
@@ -85,12 +70,12 @@ public class ItemService {
 
     @Transactional
     public void deleteById(UUID id) {
-        Member member = AuthUtil.getAuthenticated();
         Item item = findById(id);
-        Member originalSeller = item.getSeller();
-        if (!member.equals(originalSeller)) {
+        System.out.println(item);
+        if (isNotAllowedItemModifier(item.getSeller())) {
             throw new ForbiddenException();
         }
+        deleteAllCurrentMedia(item);
         itemRepository.delete(item);
     }
 
@@ -124,5 +109,53 @@ public class ItemService {
     public Page<ItemSummaryDTO> findAll(Pageable pageable) {
         Page<Item> itemPage = itemRepository.findAll(pageable);
         return itemPage.map(ItemMapper::toItemSummaryDTO);
+    }
+
+    // Helpers
+
+    private List<ItemMedia> uploadAndMapMedia(List<MultipartFile> multipartFileList) {
+        List<Media> itemMediaList = mediaService.uploadAndGet(multipartFileList);
+        return itemMediaList.stream().map(ItemMediaMapper::toItemMedia).toList();
+    }
+
+    private void updateItemValues(Item item, ModifiedItemRequest request) {
+        System.out.println(request);
+        if (!request.title().isEmpty()) {
+            item.setTitle(request.title());
+        }
+        if (request.price() != null) {
+            item.setPrice(request.price());
+        }
+        if (request.description() != null && !request.description().isEmpty()) {
+            item.setDescription(request.description());
+        }
+        List<MultipartFile> multipartFileList = request.media();
+        if (multipartFileList != null && !multipartFileList.isEmpty() && !multipartFileList.getFirst().isEmpty()) {
+            updateMedia(item, multipartFileList);
+        }
+        if (request.categoryId() != null) {
+            Category category = categoryService.findById(request.categoryId());
+            item.setCategory(category);
+        }
+    }
+
+    private void updateMedia(Item item, List<MultipartFile> media) {
+        deleteAllCurrentMedia(item);
+        List<ItemMedia> newItemMediaList = uploadAndMapMedia(media);
+        item.addAllMedia(newItemMediaList);
+    }
+
+    private void deleteAllCurrentMedia(Item item) {
+        List<ItemMedia> currentItemMediaList = item.getMediaList();
+        currentItemMediaList.forEach(m -> {
+            mediaService.delete(m.getMedia().key());
+            itemMediaService.delete(m);
+        });
+        item.setMediaList(new ArrayList<>());
+    }
+
+    private boolean isNotAllowedItemModifier(Member seller) {
+        Member modifier = AuthUtils.getAuthenticated();
+        return !modifier.equals(seller) && !modifier.isAdmin();
     }
 }
