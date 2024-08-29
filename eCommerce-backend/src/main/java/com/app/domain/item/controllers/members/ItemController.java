@@ -5,9 +5,11 @@ import com.app.domain.item.dtos.requests.ModifiedItemRequest;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.services.ItemService;
 import com.app.global.constants.RestEndpoints;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,17 +28,25 @@ public class ItemController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ItemSummaryDTO> create(NewItemRequest request) {
+    public ResponseEntity<ItemSummaryDTO> create(@Validated NewItemRequest request) {
         return ResponseEntity.ok(itemService.create(request));
     }
 
-    @PutMapping(value="/{itemId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ItemSummaryDTO> modify(@PathVariable UUID itemId, ModifiedItemRequest request) {
+    @PutMapping(value = "/{itemId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ItemSummaryDTO> modify(
+            @PathVariable
+            @NotNull
+            UUID itemId,
+            @Validated
+            ModifiedItemRequest request) {
         return ResponseEntity.ok(itemService.modify(itemId, request));
     }
 
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<?> delete(@PathVariable UUID itemId) {
+    public ResponseEntity<?> delete(
+            @PathVariable
+            @NotNull
+            UUID itemId) {
         itemService.deleteById(itemId);
         return ResponseEntity.ok().build();
     }

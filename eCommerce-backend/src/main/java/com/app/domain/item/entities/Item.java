@@ -5,6 +5,7 @@ import com.app.global.entities.AuditableEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ public class Item extends AuditableEntity {
     private String title;
 
     @NotNull
+    @PositiveOrZero
     @Column(name = "item_price", nullable = false, precision = PRICE_PRECISION, scale = PRICE_SCALE)
     private BigDecimal price;
 

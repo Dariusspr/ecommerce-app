@@ -4,9 +4,7 @@ import com.app.global.entities.AuditableEntity;
 import com.app.global.enums.Gender;
 import com.app.global.vos.Media;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,6 +27,7 @@ public class Member extends AuditableEntity implements UserDetails, Principal {
 
     @NotBlank
     @Size(min = USERNAME_LENGTH_MIN, max = USERNAME_LENGTH_MAX)
+    @Pattern(regexp = USERNAME_REGEX)
     @Column(name = "member_username", nullable = false, length = USERNAME_LENGTH_MAX, unique = true)
     private String username;
 
@@ -38,6 +37,7 @@ public class Member extends AuditableEntity implements UserDetails, Principal {
     private String password;
 
     @NotBlank
+    @Email
     @Column(name = "member_email", nullable = false)
     private String email;
 

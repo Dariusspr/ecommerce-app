@@ -14,6 +14,7 @@ public class UserInputConstants {
     public static final int TITLE_LENGTH_MIN = 3;
     public static final int TITLE_LENGTH_MAX = 40;
 
+    public static final String USERNAME_REGEX = "^[a-zA-Z0-9_.-]+$";
     public static final int USERNAME_LENGTH_MIN = 3;
     public static final int USERNAME_LENGTH_MAX = 30;
 
