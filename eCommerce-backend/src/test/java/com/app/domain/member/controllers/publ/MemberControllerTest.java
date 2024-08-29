@@ -91,10 +91,11 @@ public class MemberControllerTest {
                 memberSummaryDTOS,
                 PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE),
                 memberSummaryDTOS.size());
-        given(memberService.findAllSummariesByUsername(" ", pageable))
+        String username = RandomMemberBuilder.getUsername();
+        given(memberService.findAllSummariesByUsername(username, pageable))
                 .willReturn(memberSummaryDTOPage);
 
-        mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
+        mockMvc.perform(get(MemberController.BASE_URL + "/username/" + username)
                         .param("page", String.valueOf(pageable.getPageNumber()))
                         .param("size", String.valueOf(pageable.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -114,10 +115,11 @@ public class MemberControllerTest {
                 memberSummaryDTOS,
                 PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE),
                 memberSummaryDTOS.size());
-        given(memberService.findAllSummariesByUsername(" ", pageable))
+        String username = RandomMemberBuilder.getUsername();
+        given(memberService.findAllSummariesByUsername(username, pageable))
                 .willReturn(memberSummaryDTOPage);
 
-        mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
+        mockMvc.perform(get(MemberController.BASE_URL + "/username/" + username)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -128,7 +130,7 @@ public class MemberControllerTest {
     void getMembersByUsernames_returnBadRequest() throws Exception {
         doThrow(new MemberNotFoundException()).when(memberService).findAllSummariesByUsername(anyString(), any());
 
-        mockMvc.perform(get(MemberController.BASE_URL + "/username/ ")
+        mockMvc.perform(get(MemberController.BASE_URL + "/username/" + RandomMemberBuilder.getUsername())
                         .param("page", String.valueOf(pageable.getPageNumber()))
                         .param("size", String.valueOf(pageable.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))

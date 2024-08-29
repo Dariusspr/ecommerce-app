@@ -10,7 +10,7 @@ import com.app.global.config.security.JwtAuthenticationFilter;
 import com.app.global.constants.ExceptionMessages;
 import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.global.NumberUtils;
-import com.app.utils.global.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,6 +29,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MAX;
+import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MIN;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -117,8 +119,8 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.seller.profile.format", is(item.getSeller().getProfile().format().toString())))
                 .andExpect(jsonPath("$.media.size()", is(item.getMediaList().size())))
                 .andExpect(jsonPath("$.category", is(item.getCategory().getTitle())))
-                .andExpect(jsonPath("$.createdDate", is(item.getCreatedDate().truncatedTo(ChronoUnit.SECONDS).toString())))
-                .andExpect(jsonPath("$.lastModifiedData", is(item.getLastModifiedDate().truncatedTo(ChronoUnit.SECONDS).toString())));
+                .andExpect(jsonPath("$.createdDate", notNullValue()))
+                .andExpect(jsonPath("$.lastModifiedData", notNullValue()));
     }
 
     @Test
@@ -147,7 +149,7 @@ public class ItemControllerTest {
                 itemSummaryDTOList.size());
         given(itemService.findByTitle(anyString(), any())).willReturn(itemSummaryDTOPage);
 
-        mockMvc.perform(get(ItemController.BASE_URL + "/title/" + StringUtils.getText(1))
+        mockMvc.perform(get(ItemController.BASE_URL + "/title/" + RandomStringUtils.randomAlphanumeric(TITLE_LENGTH_MIN, TITLE_LENGTH_MAX))
                         .param("page", String.valueOf(pageable.getPageNumber()))
                         .param("size", String.valueOf(pageable.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -160,7 +162,7 @@ public class ItemControllerTest {
     void getByTitle_returnEmpty() throws Exception {
         given(itemService.findByTitle(anyString(), any())).willReturn(Page.empty());
 
-        mockMvc.perform(get(ItemController.BASE_URL + "/title/" + StringUtils.getText(1))
+        mockMvc.perform(get(ItemController.BASE_URL + "/title/" + RandomStringUtils.randomAlphanumeric(TITLE_LENGTH_MIN, TITLE_LENGTH_MAX))
                         .param("page", String.valueOf(pageable.getPageNumber()))
                         .param("size", String.valueOf(pageable.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))

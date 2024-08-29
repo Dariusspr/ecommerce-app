@@ -39,6 +39,6 @@ public class EmailServiceTest {
 
         emailService.sendVerificationEmail("test@example.com", token);
 
-        verify(mailSender, Mockito.times(1)).send(any(MimeMessage.class));
+        verify(mailSender, Mockito.times(1)).send(mimeMessage);
     }
 }
