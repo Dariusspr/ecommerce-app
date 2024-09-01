@@ -3,13 +3,13 @@ package com.app.domain.review.entities;
 import com.app.domain.member.entities.Member;
 import com.app.global.entities.AuditableEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.app.global.constants.UserInputConstants.COMMENT_CONTENT_LENGTH_MAX;
 import static com.app.global.constants.UserInputConstants.COMMENT_CONTENT_LENGTH_MIN;
 
 
@@ -28,16 +28,17 @@ public class Comment extends AuditableEntity {
     private Member author;
 
     @Lob
-    @NotBlank
-    @Size(min = COMMENT_CONTENT_LENGTH_MIN)
+    @Size(min = COMMENT_CONTENT_LENGTH_MIN, max = COMMENT_CONTENT_LENGTH_MAX)
     @Column(name = "comment_content", nullable = false)
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,
+            cascade = {CascadeType.DETACH, CascadeType.MERGE,
+                    CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "comment_parent_id")
     private Comment parent;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Comment> children = new ArrayList<>();
 
     protected Comment() {}
@@ -45,6 +46,22 @@ public class Comment extends AuditableEntity {
     public Comment(Member author, String content) {
         this.author = author;
         this.content = content;
+    }
+
+    public void addChild(Comment child) {
+        if (child == null) {
+            throw new IllegalArgumentException("'child' is null");
+        }
+        child.setParent(this);
+        children.add(child);
+    }
+
+    public void removeChild(Comment child) {
+        if (child == null) {
+            throw new IllegalArgumentException("'child' is null");
+        }
+        child.setParent(null);
+        children.remove(child);
     }
 
     // AUTO GENERATED

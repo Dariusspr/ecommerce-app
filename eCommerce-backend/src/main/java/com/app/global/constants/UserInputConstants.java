@@ -35,6 +35,7 @@ public class UserInputConstants {
     public static final int RATING_MAX = 10;
 
     public static final int COMMENT_CONTENT_LENGTH_MIN = 3;
+    public static final int COMMENT_CONTENT_LENGTH_MAX = 1000;
 
     public static final Role.RoleTitle DEFAULT_MEMBER_ROLE = Role.RoleTitle.MEMBER;
 
