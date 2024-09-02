@@ -41,6 +41,9 @@ public class Comment extends AuditableEntity {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Comment> children = new ArrayList<>();
 
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    private List<CommentReaction> reactions = new ArrayList<>();
+
     protected Comment() {}
 
     public Comment(Member author, String content) {
@@ -62,6 +65,22 @@ public class Comment extends AuditableEntity {
         }
         child.setParent(null);
         children.remove(child);
+    }
+
+    public void addReaction(CommentReaction reaction) {
+        if (reaction == null) {
+            throw new IllegalArgumentException("'reaction' is null");
+        }
+        reaction.setComment(this);
+        reactions.add(reaction);
+    }
+
+    public void removeReaction(CommentReaction reaction) {
+        if (reaction == null) {
+            throw new IllegalArgumentException("'reaction' is null");
+        }
+        reaction.setComment(null);
+        reactions.remove(reaction);
     }
 
     // AUTO GENERATED
@@ -104,5 +123,13 @@ public class Comment extends AuditableEntity {
 
     public void setChildren(List<Comment> children) {
         this.children = children;
+    }
+
+    public List<CommentReaction> getReactions() {
+        return reactions;
+    }
+
+    public void setReactions(List<CommentReaction> reactions) {
+        this.reactions = reactions;
     }
 }

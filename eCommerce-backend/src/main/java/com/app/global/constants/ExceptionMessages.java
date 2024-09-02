@@ -31,4 +31,5 @@ public class ExceptionMessages {
 
     public static final String COMMENT_REACTION_NOT_FOUND_MESSAGE = "Comment reaction not found.";
     public static final String PARENT_COMMENT_NOT_FOUND_MESSAGE = "Parent comment was not found.";
+    public static final String DUPLICATE_COMMENT_REACTION_MESSAGE = "Member has already reacted to this comment.";
 }
