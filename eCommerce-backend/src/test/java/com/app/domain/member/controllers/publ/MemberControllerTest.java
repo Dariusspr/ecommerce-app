@@ -70,12 +70,12 @@ public class MemberControllerTest {
     }
 
     @Test
-    void getMemberById_returnBadRequest() throws Exception {
+    void getMemberById_returnNotFound() throws Exception {
         doThrow(new MemberNotFoundException()).when(memberService).findSummaryDtoById(anyLong());
 
         mockMvc.perform(get(MemberController.BASE_URL + "/" + anyLong())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.MEMBER_NOT_FOUND_MESSAGE)));
     }
@@ -127,14 +127,14 @@ public class MemberControllerTest {
     }
 
     @Test
-    void getMembersByUsernames_returnBadRequest() throws Exception {
+    void getMembersByUsernames_returnNotFound() throws Exception {
         doThrow(new MemberNotFoundException()).when(memberService).findAllSummariesByUsername(anyString(), any());
 
         mockMvc.perform(get(MemberController.BASE_URL + "/username/" + RandomMemberBuilder.getUsername())
                         .param("page", String.valueOf(pageable.getPageNumber()))
                         .param("size", String.valueOf(pageable.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.MEMBER_NOT_FOUND_MESSAGE)));
     }

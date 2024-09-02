@@ -124,12 +124,12 @@ public class ItemControllerTest {
     }
 
     @Test
-    void getById_returnBadRequest() throws Exception {
+    void getById_returnNotFound() throws Exception {
         doThrow(new ItemNotFoundException()).when(itemService).findDetailedById(any());
 
         mockMvc.perform(get(ItemController.BASE_URL + "/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.ITEM_NOT_FOUND_MESSAGE)));
     }

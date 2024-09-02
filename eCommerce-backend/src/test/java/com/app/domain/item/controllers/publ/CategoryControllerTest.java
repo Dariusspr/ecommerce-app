@@ -74,13 +74,13 @@ public class CategoryControllerTest {
     }
 
     @Test
-    public void getCategoryById_returnBadRequest() throws Exception {
+    public void getCategoryById_returnNotFound() throws Exception {
         long id = 1;
         given(categoryService.findDtoById(id)).willThrow(new CategoryNotFoundException());
 
         mockMvc.perform(get(CategoryController.BASE_URL + "/" + id)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.CATEGORY_NOT_FOUND_MESSAGE)));
     }
@@ -101,13 +101,13 @@ public class CategoryControllerTest {
     }
 
     @Test
-    public void getCategoryByTitle_returnBadRequest() throws Exception {
+    public void getCategoryByTitle_returnNotFound() throws Exception {
         String title = RandomCategoryBuilder.getTitle();
         given(categoryService.findDtoByTitle(title)).willThrow(new CategoryNotFoundException());
 
         mockMvc.perform(get(CategoryController.BASE_URL + "/title/" + title)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.CATEGORY_NOT_FOUND_MESSAGE)));
     }

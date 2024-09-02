@@ -98,7 +98,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void create_returnException() throws Exception {
+    void create_returnNotFound() throws Exception {
         Item item = new RandomItemBuilder().create();
         NewItemRequest itemRequest = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
         MockMultipartFile mockFile = new MockMultipartFile(
@@ -116,7 +116,7 @@ public class ItemControllerTest {
                         .param("description", itemRequest.description())
                         .param("categoryId", itemRequest.categoryId() == null ? "" : itemRequest.categoryId().toString())
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.ITEM_NOT_FOUND_MESSAGE)));
     }

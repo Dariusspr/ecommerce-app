@@ -56,13 +56,13 @@ public class CategoryControllerTest {
     }
 
     @Test
-    void deleteCategory_returnBadRequest() throws Exception {
+    void deleteCategory_returnNotFound() throws Exception {
         final long id = 1;
         doThrow(new CategoryNotFoundException()).when(categoryService).deleteById(id);
 
         mockMvc.perform(delete(CategoryController.BASE_URL + "/" + id)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.CATEGORY_NOT_FOUND_MESSAGE)));
     }
@@ -87,14 +87,14 @@ public class CategoryControllerTest {
     }
 
     @Test
-    void addNewCategory_returnException() throws Exception {
+    void addNewCategory_returnNotFound() throws Exception {
         String requestJSON = StringUtils.toJSON(new NewCategoryRequest(NumberUtils.getId(), RandomCategoryBuilder.getTitle()));
         doThrow(new ParentCategoryNotFoundException()).when(categoryService).addNewCategoryDTO(any());
 
         mockMvc.perform(post(CategoryController.BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.PARENT_CATEGORY_NOT_FOUND_MESSAGE)));
     }

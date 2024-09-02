@@ -81,37 +81,37 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    void registerNewMember_returnBadRequest() throws Exception {
+    void registerNewMember_returnConflict() throws Exception {
         doThrow(new MemberAlreadyExistsException()).when(authenticationService).registerNewMember(any());
 
         mockMvc.perform(post(AuthenticationController.BASE_URL + "/register")
                         .content(newMemberRequestJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.MEMBER_ALREADY_EXISTS_MESSAGE)));
     }
 
     @Test
-    void authenticate_notEnabled_returnBadRequest() throws Exception {
+    void authenticate_notEnabled_returnUnauthorized() throws Exception {
         doThrow(new AccountNotEnabledException()).when(authenticationService).authenticate(any());
 
         mockMvc.perform(post(AuthenticationController.BASE_URL + "/authenticate")
                         .content(authRequestJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.ACCOUNT_NOT_ENABLED_MESSAGE)));
     }
 
     @Test
-    void authenticate_returnBadRequest() throws Exception {
+    void authenticate_returnUnauthorized() throws Exception {
         doThrow(new BadMemberCredentialsException()).when(authenticationService).authenticate(authRequest);
 
         mockMvc.perform(post(AuthenticationController.BASE_URL + "/authenticate")
                         .content(authRequestJson)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.MEMBER_BAD_CREDENTIALS_MESSAGE)));
     }
