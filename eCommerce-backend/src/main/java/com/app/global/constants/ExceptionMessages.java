@@ -24,12 +24,12 @@ public class ExceptionMessages {
     public static final String UNSUPPORTED_FILE_FORMAT_MESSAGE = "This file format is not supported.";
     public static final String FAILED_TO_UPLOAD_FILE_MESSAGE = "Failed to upload file.";
 
-    public static final String REVIEW_NOT_FOUND_MESSAGE = "Review was not found.";
     public static final String COMMENT_NOT_FOUND_MESSAGE = "Comment was not found.";
+    public static final String PARENT_COMMENT_NOT_FOUND_MESSAGE = "Parent comment was not found.";
+    public static final String COMMENT_REACTION_NOT_FOUND_MESSAGE = "Comment reaction not found.";
+    public static final String DUPLICATE_COMMENT_REACTION_MESSAGE = "You have already reacted to this comment.";
+    public static final String REVIEW_NOT_FOUND_MESSAGE = "Review was not found.";
+    public static final String DUPLICATE_REVIEW_MESSAGE = "You have already submitted a review.";
 
     public static final String GENERIC_MESSAGE = "Something went wrong.";
-
-    public static final String COMMENT_REACTION_NOT_FOUND_MESSAGE = "Comment reaction not found.";
-    public static final String PARENT_COMMENT_NOT_FOUND_MESSAGE = "Parent comment was not found.";
-    public static final String DUPLICATE_COMMENT_REACTION_MESSAGE = "Member has already reacted to this comment.";
-}
+  }

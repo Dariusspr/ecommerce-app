@@ -1,10 +1,9 @@
 package com.app.domain.review.mappers;
 
 import com.app.domain.review.dtos.ReviewDTO;
-import com.app.domain.review.entities.Review;
+import com.app.domain.review.entities.base.Review;
 
 import static com.app.domain.member.mappers.MemberMapper.toMemberSummaryDTO;
-import static com.app.domain.review.mappers.CommentMapper.toTopLevelCommentDTO;
 
 public class ReviewMapper {
 
@@ -16,7 +15,7 @@ public class ReviewMapper {
                 review.getId(),
                 toMemberSummaryDTO(review.getAuthor()),
                 review.getRating(),
-                toTopLevelCommentDTO(review.getComment()),
+                CommentMapper.toCommentDTO(review.getComment()),
                 review.getCreatedDate(),
                 review.getLastModifiedDate()
         );

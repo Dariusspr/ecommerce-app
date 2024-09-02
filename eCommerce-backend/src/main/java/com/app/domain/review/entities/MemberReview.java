@@ -1,12 +1,15 @@
 package com.app.domain.review.entities;
 
 import com.app.domain.member.entities.Member;
+import com.app.domain.review.entities.base.Review;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "member_review")
-public class MemberReview extends Review{
+@Table(name = "member_review", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"member_id", "review_author_id"})
+})
+public class MemberReview extends Review {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

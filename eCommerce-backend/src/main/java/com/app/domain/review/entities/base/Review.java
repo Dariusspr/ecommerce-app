@@ -1,6 +1,7 @@
-package com.app.domain.review.entities;
+package com.app.domain.review.entities.base;
 
 import com.app.domain.member.entities.Member;
+import com.app.domain.review.entities.Comment;
 import com.app.global.entities.AuditableEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -30,7 +31,7 @@ public abstract class Review extends AuditableEntity {
     private int rating;
 
     @NotNull
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
