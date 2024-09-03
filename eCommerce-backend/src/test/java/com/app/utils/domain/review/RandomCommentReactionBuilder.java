@@ -16,8 +16,15 @@ public class RandomCommentReactionBuilder {
     private Member customAuthor;
     private Comment customComment;
     private ReactionType customReactionType;
+    private boolean withId;
 
     public RandomCommentReactionBuilder() {
+    }
+
+
+    public RandomCommentReactionBuilder withId() {
+        withId = true;
+        return this;
     }
 
     public RandomCommentReactionBuilder withCustomAuthor(Member customAuthor) {
@@ -36,7 +43,10 @@ public class RandomCommentReactionBuilder {
     }
 
     public CommentReaction create() {
-        return createBasic();
+        CommentReaction reaction = createBasic();
+        if (withId)
+            reaction.setId(NumberUtils.getId());
+        return reaction;
     }
 
     public List<CommentReaction> create(int count) {
@@ -62,4 +72,5 @@ public class RandomCommentReactionBuilder {
         ReactionType[] reactionTypes = ReactionType.values();
         return reactionTypes[NumberUtils.getIntegerInRange(0, reactionTypes.length - 1)];
     }
+
 }

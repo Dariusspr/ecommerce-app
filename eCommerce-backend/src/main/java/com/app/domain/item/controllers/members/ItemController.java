@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 
-@RestController("adminItemController")
+@RestController("membersItemController")
 @RequestMapping(ItemController.BASE_URL)
 @PreAuthorize("hasAnyRole({'MEMBER', 'ADMIN'})")
 public class ItemController {

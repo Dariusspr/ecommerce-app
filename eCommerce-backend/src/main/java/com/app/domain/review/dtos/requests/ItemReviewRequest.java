@@ -9,7 +9,6 @@ import static com.app.global.constants.UserInputConstants.COMMENT_CONTENT_LENGTH
 
 public record ItemReviewRequest(
         @NotNull
-        @PositiveOrZero
         UUID itemId,
 
         @NotNull

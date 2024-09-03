@@ -17,6 +17,7 @@ import static com.app.global.constants.UserInputConstants.RATING_MIN;
 public class RandomReviewBuilder {
 
     private Member customAuthor;
+    private boolean withId;
 
     public RandomReviewBuilder() {
 
@@ -27,17 +28,28 @@ public class RandomReviewBuilder {
         return this;
     }
 
+    public RandomReviewBuilder withId() {
+        withId = true;
+        return this;
+    }
+
     public Review create(Object target) {
         Member author = Objects.requireNonNullElseGet(customAuthor,
                 () -> new RandomMemberBuilder().create());
 
+        Review review;
         if (target instanceof Item item) {
-            return new ItemReview(author, getRating(), getCommentTemplate(author), item);
+            review = new ItemReview(author, getRating(), getCommentTemplate(author), item);
         } else if (target instanceof Member member) {
-            return new MemberReview(author, getRating(), getCommentTemplate(author), member);
+            review = new MemberReview(author, getRating(), getCommentTemplate(author), member);
         } else {
             throw new IllegalArgumentException("Unsupported review target.");
         }
+
+        if (withId)
+            review.setId(NumberUtils.getId());
+
+        return review;
     }
 
     public static int getRating() {
@@ -47,4 +59,6 @@ public class RandomReviewBuilder {
     public Comment getCommentTemplate(Member author) {
         return new Comment(author, "<EMPTY COMMENT>");
     }
+
+
 }

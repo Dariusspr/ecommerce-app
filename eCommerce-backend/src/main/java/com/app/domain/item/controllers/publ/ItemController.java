@@ -21,7 +21,7 @@ import java.util.UUID;
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MAX;
 import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MIN;
 
-@RestController("publicItemController")
+@RestController("publItemController")
 @RequestMapping(ItemController.BASE_URL)
 public class ItemController {
     public static final String BASE_URL = RestEndpoints.PUBLIC_API + "/items";
