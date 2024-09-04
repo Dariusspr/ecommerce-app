@@ -29,7 +29,7 @@ public abstract class ReviewService<R extends JpaRepository<T, Long>, T extends 
     @Transactional
     public T save(T entity) {
         try {
-            return reviewRepository.save(entity);
+            return reviewRepository.saveAndFlush(entity);
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateReviewException();
         }
