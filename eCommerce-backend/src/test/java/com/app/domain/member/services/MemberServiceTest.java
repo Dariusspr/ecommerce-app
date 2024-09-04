@@ -2,6 +2,7 @@ package com.app.domain.member.services;
 
 import com.app.domain.member.dtos.MemberSummaryDTO;
 import com.app.domain.member.entities.Member;
+import com.app.domain.member.exceptions.DuplicateMemberException;
 import com.app.domain.member.exceptions.MemberNotFoundException;
 import com.app.domain.member.mappers.MemberMapper;
 import com.app.global.enums.Gender;
@@ -61,7 +62,6 @@ public class MemberServiceTest {
         assertThrows(MemberNotFoundException.class, () -> memberService.findById(id));
     }
 
-    // DTO methods
 
     @Test
     void save_ok() {
@@ -88,7 +88,7 @@ public class MemberServiceTest {
         member2.setUsername(member1.getUsername());
 
         memberService.save(member1);
-        assertThrows(DataIntegrityViolationException.class, () -> memberService.save(member2));
+        assertThrows(DuplicateMemberException.class, () -> memberService.save(member2));
     }
 
     @Test
@@ -103,17 +103,17 @@ public class MemberServiceTest {
     }
 
     @Test
-    void findSummaryDtoById_ok() {
+    void findSummaryById_ok() {
         Member member = new RandomMemberBuilder().create();
         MemberSummaryDTO memberDto = memberService.save(member);
 
-        MemberSummaryDTO returnedMemberDto = memberService.findSummaryDtoById(member.getId());
+        MemberSummaryDTO returnedMemberDto = memberService.findSummaryById(member.getId());
 
         assertEquals(memberDto, returnedMemberDto);
     }
 
     @Test
-    void findSummaryDtoById_throwMemberNotFound() {
+    void findSummaryById_throwMemberNotFound() {
         final Long id = NumberUtils.getId();
 
         assertThrows(MemberNotFoundException.class, () -> memberService.findById(id));
@@ -132,7 +132,7 @@ public class MemberServiceTest {
     }
 
     @Test
-    void findAllSummariesByUsername_multiple_ok() {
+    void findAllSummariesByUsername_multiplePages_ok() {
         final int memberCountToTest = 5;
         RandomMemberBuilder builder = new RandomMemberBuilder();
         List<Member> members = builder.create(memberCountToTest);

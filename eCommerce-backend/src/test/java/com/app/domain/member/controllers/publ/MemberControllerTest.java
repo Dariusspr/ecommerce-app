@@ -55,7 +55,7 @@ public class MemberControllerTest {
                 .withId()
                 .create();
         final MemberSummaryDTO memberSummaryDTO = MemberMapper.toMemberSummaryDTO(member);
-        given(memberService.findSummaryDtoById(member.getId()))
+        given(memberService.findSummaryById(member.getId()))
                 .willReturn(memberSummaryDTO);
 
         mockMvc.perform(get(MemberController.BASE_URL + "/" + member.getId())
@@ -71,7 +71,7 @@ public class MemberControllerTest {
 
     @Test
     void getMemberById_returnNotFound() throws Exception {
-        doThrow(new MemberNotFoundException()).when(memberService).findSummaryDtoById(anyLong());
+        doThrow(new MemberNotFoundException()).when(memberService).findSummaryById(anyLong());
 
         mockMvc.perform(get(MemberController.BASE_URL + "/" + anyLong())
                         .contentType(MediaType.APPLICATION_JSON))

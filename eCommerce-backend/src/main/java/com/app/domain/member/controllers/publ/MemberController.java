@@ -32,7 +32,7 @@ public class MemberController {
             @NotNull
             @PositiveOrZero
             Long id) {
-        MemberSummaryDTO memberSummaryDTO = memberService.findSummaryDtoById(id);
+        MemberSummaryDTO memberSummaryDTO = memberService.findSummaryById(id);
         return ResponseEntity.ok(memberSummaryDTO);
     }
 
