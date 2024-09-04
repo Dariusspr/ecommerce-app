@@ -1,7 +1,7 @@
 package com.app.domain.item.controllers.members;
 
 import com.app.domain.item.dtos.ItemSummaryDTO;
-import com.app.domain.item.dtos.requests.ModifiedItemRequest;
+import com.app.domain.item.dtos.requests.ModifyItemRequest;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.entities.Item;
 import com.app.domain.item.exceptions.ItemNotFoundException;
@@ -130,7 +130,7 @@ public class ItemControllerTest {
                 "image/png",
                 "<Image>".getBytes()
         );
-        ModifiedItemRequest itemRequest = new ModifiedItemRequest(item.getTitle(), null, null, List.of(mockFile), null);
+        ModifyItemRequest itemRequest = new ModifyItemRequest(item.getTitle(), null, null, List.of(mockFile), null);
         ItemSummaryDTO itemSummaryDTO = ItemMapper.toItemSummaryDTO(item);
 
         given(itemService.modify(item.getId(), itemRequest)).willReturn(itemSummaryDTO);
@@ -162,7 +162,7 @@ public class ItemControllerTest {
                 "image/png",
                 "<Image>".getBytes()
         );
-        ModifiedItemRequest itemRequest = new ModifiedItemRequest(item.getTitle(), null, null, List.of(mockFile), null);
+        ModifyItemRequest itemRequest = new ModifyItemRequest(item.getTitle(), null, null, List.of(mockFile), null);
         doThrow(new ForbiddenException()).when(itemService).modify(any(), any());
 
         mockMvc.perform(MockMvcRequestBuilders.multipart(ItemController.BASE_URL + "/" + item.getId())

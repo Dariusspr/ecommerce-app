@@ -16,7 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -43,7 +42,7 @@ public class CategoryControllerTest {
 
     @Test
     public void getRootCategories_returnsOkEmpty() throws Exception {
-        given(categoryService.findRootsDto()).willReturn(Collections.emptyList());
+        given(categoryService.findRoots()).willReturn(Collections.emptyList());
 
         mockMvc.perform(get(CategoryController.BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -60,7 +59,7 @@ public class CategoryControllerTest {
                 .withId()
                 .create(rootCount);
         List<CategoryDTO> categoryDTOList = CategoryMapper.toCategoryDTO(categoryList);
-        given(categoryService.findRootsDto()).willReturn(categoryDTOList);
+        given(categoryService.findRoots()).willReturn(categoryDTOList);
 
         mockMvc.perform(get(CategoryController.BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -103,7 +102,7 @@ public class CategoryControllerTest {
     @Test
     public void getCategoryByTitle_returnNotFound() throws Exception {
         String title = RandomCategoryBuilder.getTitle();
-        given(categoryService.findDtoByTitle(title)).willThrow(new CategoryNotFoundException());
+        given(categoryService.findByTitle(title)).willThrow(new CategoryNotFoundException());
 
         mockMvc.perform(get(CategoryController.BASE_URL + "/title/" + title)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -117,7 +116,7 @@ public class CategoryControllerTest {
         Category category = new RandomCategoryBuilder().withId().create();
         String title = category.getTitle();
         CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
-        given(categoryService.findDtoByTitle(title)).willReturn(categoryDTO);
+        given(categoryService.findByTitle(title)).willReturn(categoryDTO);
 
         mockMvc.perform(get(CategoryController.BASE_URL + "/title/" + title)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -146,7 +145,7 @@ public class CategoryControllerTest {
         final int childrenCount = 5;
         List<Category> categoryList = new RandomCategoryBuilder().withId().create(childrenCount);
         List<CategoryDTO> categoryDTOList = CategoryMapper.toCategoryDTO(categoryList);
-        given(categoryService.findDtosByParentId(parentId)).willReturn(categoryDTOList);
+        given(categoryService.findByParentId(parentId)).willReturn(categoryDTOList);
 
         mockMvc.perform(get(CategoryController.BASE_URL + "/parent/" + parentId)
                         .contentType(MediaType.APPLICATION_JSON))

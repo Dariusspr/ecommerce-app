@@ -2,7 +2,7 @@ package com.app.domain.item.services;
 
 import com.app.domain.item.dtos.ItemDetailedDTO;
 import com.app.domain.item.dtos.ItemSummaryDTO;
-import com.app.domain.item.dtos.requests.ModifiedItemRequest;
+import com.app.domain.item.dtos.requests.ModifyItemRequest;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.entities.Item;
@@ -54,7 +54,7 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemSummaryDTO modify(UUID itemId, ModifiedItemRequest request) {
+    public ItemSummaryDTO modify(UUID itemId, ModifyItemRequest request) {
         Item item = findById(itemId);
         if (isNotAllowedItemModifier(item.getSeller())) {
             throw new ForbiddenException();
@@ -71,7 +71,6 @@ public class ItemService {
     @Transactional
     public void deleteById(UUID id) {
         Item item = findById(id);
-        System.out.println(item);
         if (isNotAllowedItemModifier(item.getSeller())) {
             throw new ForbiddenException();
         }
@@ -118,7 +117,7 @@ public class ItemService {
         return itemMediaList.stream().map(ItemMediaMapper::toItemMedia).toList();
     }
 
-    private void updateItemValues(Item item, ModifiedItemRequest request) {
+    private void updateItemValues(Item item, ModifyItemRequest request) {
         System.out.println(request);
         if (!request.title().isEmpty()) {
             item.setTitle(request.title());

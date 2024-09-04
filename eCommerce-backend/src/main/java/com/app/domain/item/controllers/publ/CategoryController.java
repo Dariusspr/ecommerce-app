@@ -31,7 +31,7 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryDTO>> getRootCategories() {
-        List<CategoryDTO> roots = categoryService.findRootsDto();
+        List<CategoryDTO> roots = categoryService.findRoots();
         return ResponseEntity.ok(roots);
     }
 
@@ -51,7 +51,7 @@ public class CategoryController {
             @NotNull
             @PositiveOrZero
             Long parentId) {
-        List<CategoryDTO> children = categoryService.findDtosByParentId(parentId);
+        List<CategoryDTO> children = categoryService.findByParentId(parentId);
         return ResponseEntity.ok(children);
     }
 
@@ -61,7 +61,7 @@ public class CategoryController {
             @NotBlank
             @Size(min = TITLE_LENGTH_MIN, max = TITLE_LENGTH_MAX)
             String title) {
-        CategoryDTO category = categoryService.findDtoByTitle(title);
+        CategoryDTO category = categoryService.findByTitle(title);
         return ResponseEntity.ok(category);
     }
 }

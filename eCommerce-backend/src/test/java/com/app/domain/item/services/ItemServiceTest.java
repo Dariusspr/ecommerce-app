@@ -2,7 +2,7 @@ package com.app.domain.item.services;
 
 import com.app.domain.item.dtos.ItemDetailedDTO;
 import com.app.domain.item.dtos.ItemSummaryDTO;
-import com.app.domain.item.dtos.requests.ModifiedItemRequest;
+import com.app.domain.item.dtos.requests.ModifyItemRequest;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.entities.Item;
@@ -281,9 +281,9 @@ public class ItemServiceTest {
         ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
         assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
         // setup modification request
-        ModifiedItemRequest modifiedItemRequest = new ModifiedItemRequest("NewTitle", null, null, null, null);
+        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null);
 
-        ItemSummaryDTO itemSummaryDTO2 = itemService.modify(itemSummaryDTO1.id(), modifiedItemRequest);
+        ItemSummaryDTO itemSummaryDTO2 = itemService.modify(itemSummaryDTO1.id(), modifyItemRequest);
 
         assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO2.id()));
         assertEquals(itemSummaryDTO1.id(), itemSummaryDTO2.id());
@@ -304,11 +304,11 @@ public class ItemServiceTest {
         ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
         assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
         // setup modification request
-        ModifiedItemRequest modifiedItemRequest = new ModifiedItemRequest("NewTitle", null, null, null, null);
+        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null);
         // different member
         Member otherSeller = new RandomMemberBuilder().create();
         given(authentication.getPrincipal()).willReturn(otherSeller);
 
-        assertThrows(ForbiddenException.class, () -> itemService.modify(itemSummaryDTO1.id(), modifiedItemRequest));
+        assertThrows(ForbiddenException.class, () -> itemService.modify(itemSummaryDTO1.id(), modifyItemRequest));
     }
 }

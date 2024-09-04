@@ -26,9 +26,8 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.mockito.Mockito.doNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = CategoryController.class)
@@ -44,6 +43,67 @@ public class CategoryControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Test
+    void addNewCategory_returnOk() throws Exception {
+        Category category = new RandomCategoryBuilder()
+                .withId()
+                .create();
+        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
+        NewCategoryRequest request = new NewCategoryRequest(null, category.getTitle());
+        String requestJSON = StringUtils.toJSON(request);
+        given(categoryService.addNewCategory(request)).willReturn(categoryDTO);
+
+
+        mockMvc.perform(post(CategoryController.BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(categoryDTO.id())))
+                .andExpect(jsonPath("$.title", is(categoryDTO.title())));
+    }
+
+    @Test
+    void addNewCategory_returnNotFound() throws Exception {
+        String requestJSON = StringUtils.toJSON(new NewCategoryRequest(NumberUtils.getId(), RandomCategoryBuilder.getTitle()));
+        doThrow(new ParentCategoryNotFoundException()).when(categoryService).addNewCategory(any());
+
+        mockMvc.perform(post(CategoryController.BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(ExceptionMessages.PARENT_CATEGORY_NOT_FOUND_MESSAGE)));
+    }
+
+    @Test
+    void modify_returnOK() throws Exception {
+        Category category = new RandomCategoryBuilder()
+                .withId()
+                .create();
+        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
+        given(categoryService.modify(categoryDTO.id(), categoryDTO.title())).willReturn(categoryDTO);
+
+
+        mockMvc.perform(put(CategoryController.BASE_URL + "/" + categoryDTO.id() + "/" + categoryDTO.title())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(categoryDTO.id())))
+                .andExpect(jsonPath("$.title", is(categoryDTO.title())));
+    }
+
+    @Test
+    void modify_returnNotFound() throws Exception {
+        long categoryId = NumberUtils.getId();
+        String newTitle = RandomCategoryBuilder.getTitle();
+        doThrow(new CategoryNotFoundException()).when(categoryService).modify(categoryId, newTitle);
+
+        mockMvc.perform(put(CategoryController.BASE_URL + "/" + categoryId + "/" + newTitle)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(ExceptionMessages.CATEGORY_NOT_FOUND_MESSAGE)));
+    }
 
     @Test
     void deleteCategory_returnOk() throws Exception {
@@ -67,35 +127,5 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.CATEGORY_NOT_FOUND_MESSAGE)));
     }
 
-    @Test
-    void addNewCategory_returnOk() throws Exception {
-        Category category = new RandomCategoryBuilder()
-                .withId()
-                .create();
-        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
-        NewCategoryRequest request = new NewCategoryRequest(null, category.getTitle());
-        String requestJSON = StringUtils.toJSON(request);
-        given(categoryService.addNewCategoryDTO(request)).willReturn(categoryDTO);
 
-
-        mockMvc.perform(post(CategoryController.BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(categoryDTO.id())))
-                .andExpect(jsonPath("$.title", is(categoryDTO.title())));
-    }
-
-    @Test
-    void addNewCategory_returnNotFound() throws Exception {
-        String requestJSON = StringUtils.toJSON(new NewCategoryRequest(NumberUtils.getId(), RandomCategoryBuilder.getTitle()));
-        doThrow(new ParentCategoryNotFoundException()).when(categoryService).addNewCategoryDTO(any());
-
-        mockMvc.perform(post(CategoryController.BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message", is(ExceptionMessages.PARENT_CATEGORY_NOT_FOUND_MESSAGE)));
-    }
 }

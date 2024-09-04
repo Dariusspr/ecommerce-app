@@ -1,7 +1,7 @@
 package com.app.domain.item.controllers.members;
 
 import com.app.domain.item.dtos.ItemSummaryDTO;
-import com.app.domain.item.dtos.requests.ModifiedItemRequest;
+import com.app.domain.item.dtos.requests.ModifyItemRequest;
 import com.app.domain.item.dtos.requests.NewItemRequest;
 import com.app.domain.item.services.ItemService;
 import com.app.global.constants.RestEndpoints;
@@ -38,7 +38,7 @@ public class ItemController {
             @NotNull
             UUID itemId,
             @Validated
-            ModifiedItemRequest request) {
+            ModifyItemRequest request) {
         return ResponseEntity.ok(itemService.modify(itemId, request));
     }
 

@@ -5,9 +5,12 @@ import com.app.domain.item.dtos.CategoryDTO;
 import com.app.domain.item.dtos.requests.NewCategoryRequest;
 import com.app.domain.item.entities.Category;
 import com.app.domain.item.exceptions.CategoryNotFoundException;
+import com.app.domain.item.exceptions.DuplicateCategoryException;
 import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
 import com.app.domain.item.mappers.CategoryMapper;
 import com.app.domain.item.repositories.CategoryRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Transactional(readOnly = true)
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
@@ -25,51 +29,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category save(Category category) {
-        return categoryRepository.save(category);
-    }
-
-    public Category findById(Long id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(CategoryNotFoundException::new);
-    }
-
-    public Category findByTitle(String title) {
-        return categoryRepository.findByTitle(title)
-                .orElseThrow(CategoryNotFoundException::new);
-    }
-
-    public List<Category> findRoots() {
-        return categoryRepository.findRoots();
-    }
-
-    public List<Category> findByParentId(Long id) {
-        return categoryRepository.findByParentId(id);
-    }
-
-    @Transactional
-    public void deleteById(Long id) {
-        Category category = findById(id);
-        categoryRepository.delete(category);
-    }
-
-    @Transactional(readOnly = true)
-    public Set<Category> findFrom(Long id) {
-        Category category = findById(id);
-        return findFrom(category);
-    }
-    @Transactional(readOnly = true)
-    protected Set<Category> findFrom(Category category) {
-        Set<Category> categories = new HashSet<>();
-        categories.add(category);
-        for (Category child : category.getChildren()) {
-            categories.addAll(findFrom(child));
-        }
-        return categories;
-    }
-
-    @Transactional
-    public Category addNewCategory(NewCategoryRequest request) {
+    public CategoryDTO addNewCategory(NewCategoryRequest request) {
         Category category = CategoryMapper.toCategory(request.title());
         save(category);
         if (request.parentId() != null) {
@@ -81,49 +41,79 @@ public class CategoryService {
                 throw new ParentCategoryNotFoundException();
             }
         }
-        return category;
-    }
-
-    // DTO methods
-
-    @Transactional
-    public CategoryDTO saveDto(Category category) {
-        Category returned = save(category);
-        return CategoryMapper.toCategoryDTO(returned);
-    }
-
-    @Transactional(readOnly = true)
-    public CategoryDTO findDtoByTitle(String title) {
-        Category category = findByTitle(title);
         return CategoryMapper.toCategoryDTO(category);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
+    public CategoryDTO modify(Long categoryId, String newTitle) {
+        Category category = findById(categoryId);
+        category.setTitle(newTitle);
+        save(category);
+        return CategoryMapper.toCategoryDTO(category);
+    }
+
+    @Transactional
+    public Category save(Category category) {
+        try {
+            return categoryRepository.saveAndFlush(category);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateCategoryException();
+        }
+    }
+
+    @Transactional
+    public void deleteById(Long id) {
+        Category category = findById(id);
+        categoryRepository.delete(category);
+    }
+
+    public Category findById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(CategoryNotFoundException::new);
+    }
+
     public CategoryDTO findDtoById(Long id) {
         Category category = findById(id);
         return CategoryMapper.toCategoryDTO(category);
     }
 
-    @Transactional(readOnly = true)
-    public List<CategoryDTO> findRootsDto() {
-        List<Category> categories = findRoots();
-        return categories.stream()
-                .map(CategoryMapper::toCategoryDTO)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<CategoryDTO> findDtosByParentId(Long id) {
-        List<Category> categories = findByParentId(id);
-        return categories.stream()
-                .map(CategoryMapper::toCategoryDTO)
-                .toList();
-    }
-
-    @Transactional
-    public CategoryDTO addNewCategoryDTO(NewCategoryRequest request) {
-        Category category = addNewCategory(request);
+    public CategoryDTO findByTitle(String title) {
+        Category category = categoryRepository.findByTitle(title)
+                .orElseThrow(CategoryNotFoundException::new);
         return CategoryMapper.toCategoryDTO(category);
     }
 
+    public List<CategoryDTO> findRoots() {
+        List<Category> categories = categoryRepository.findRoots();
+        return categories.stream()
+                .map(CategoryMapper::toCategoryDTO)
+                .toList();
+    }
+
+    public List<CategoryDTO> findByParentId(Long id) {
+        try {
+            Category parent = findById(id);
+            List<Category> categories = categoryRepository.findByParent(parent);
+
+            return categories.stream()
+                    .map(CategoryMapper::toCategoryDTO)
+                    .toList();
+        } catch (CategoryNotFoundException e) {
+            throw new ParentCategoryNotFoundException();
+        }
+    }
+
+    public Set<Category> findFrom(Long id) {
+        Category category = findById(id);
+        return findFrom(category);
+    }
+
+    protected Set<Category> findFrom(Category category) {
+        Set<Category> categories = new HashSet<>();
+        categories.add(category);
+        for (Category child : category.getChildren()) {
+            categories.addAll(findFrom(child));
+        }
+        return categories;
+    }
 }

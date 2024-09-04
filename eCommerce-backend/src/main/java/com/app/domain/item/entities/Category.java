@@ -18,7 +18,7 @@ import static com.app.global.constants.UserInputConstants.*;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
     private Long id;
 
@@ -36,7 +36,8 @@ public class Category {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Category> children = new ArrayList<>();
 
-    protected Category() {}
+    protected Category() {
+    }
 
     public Category(String title) {
         this.title = title;
@@ -57,6 +58,7 @@ public class Category {
         category.setParent(null);
         children.remove(category);
     }
+
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
