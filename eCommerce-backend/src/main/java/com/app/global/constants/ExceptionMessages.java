@@ -33,5 +33,10 @@ public class ExceptionMessages {
     public static final String REVIEW_NOT_FOUND_MESSAGE = "Review was not found.";
     public static final String DUPLICATE_REVIEW_MESSAGE = "You have already submitted a review.";
 
+    public static final String CART_NOT_FOUND_MESSAGE = "Cart was not found,";
+    public static final String CART_ITEM_NOT_FOUND_MESSAGE = "Cart item was not found.";
+    public static final String INSUFFICIENT_STOCK_MESSAGE = "Requested quantity is greater than available stock.";
+
+            ;
     public static final String GENERIC_MESSAGE = "Something went wrong.";
 }

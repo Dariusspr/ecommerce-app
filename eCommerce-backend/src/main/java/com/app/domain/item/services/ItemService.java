@@ -55,7 +55,7 @@ public class ItemService {
 
     @Transactional
     public ItemSummaryDTO modify(UUID itemId, ModifyItemRequest request) {
-        Item item = findById(itemId);
+        Item item = findByIdWithLock(itemId);
         if (isNotAllowedItemModifier(item.getSeller())) {
             throw new ForbiddenException();
         }
@@ -65,12 +65,12 @@ public class ItemService {
 
     @Transactional
     public ItemSummaryDTO save(Item item) {
-        return ItemMapper.toItemSummaryDTO(itemRepository.save(item));
+        return ItemMapper.toItemSummaryDTO(itemRepository.saveAndFlush(item));
     }
 
     @Transactional
     public void deleteById(UUID id) {
-        Item item = findById(id);
+        Item item = findByIdWithLock(id);
         if (isNotAllowedItemModifier(item.getSeller())) {
             throw new ForbiddenException();
         }
@@ -80,6 +80,11 @@ public class ItemService {
 
     public Item findById(UUID id) {
         return itemRepository.findById(id)
+                .orElseThrow(ItemNotFoundException::new);
+    }
+
+    public Item findByIdWithLock(UUID id) {
+        return itemRepository.findByIdWithLock(id)
                 .orElseThrow(ItemNotFoundException::new);
     }
 
@@ -110,6 +115,23 @@ public class ItemService {
         return itemPage.map(ItemMapper::toItemSummaryDTO);
     }
 
+    public Item validateAndReduceQuantity(UUID itemId, int reduceQuantity) {
+        Item item = findByIdWithLock(itemId);
+
+        int currentAvailableQuantity = item.getQuantity();
+        if (currentAvailableQuantity < reduceQuantity) {
+            throw new IllegalArgumentException();
+        }
+        item.setQuantity(currentAvailableQuantity - reduceQuantity);
+        save(item);
+
+        return item;
+    }
+
+    // TODO: find methods for only active items
+
+    // TODO: update active state
+
     // Helpers
 
     private List<ItemMedia> uploadAndMapMedia(List<MultipartFile> multipartFileList) {
@@ -124,6 +146,9 @@ public class ItemService {
         }
         if (request.price() != null) {
             item.setPrice(request.price());
+        }
+        if (request.quantity() != null) {
+            item.setQuantity(request.quantity());
         }
         if (request.description() != null && !request.description().isEmpty()) {
             item.setDescription(request.description());

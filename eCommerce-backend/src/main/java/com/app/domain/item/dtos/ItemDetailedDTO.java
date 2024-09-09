@@ -11,5 +11,5 @@ public record ItemDetailedDTO(UUID id, String title,
                               BigDecimal price, String description,
                               MemberSummaryDTO seller, List<ItemMediaDTO> media,
                               String category, LocalDateTime createdDate,
-                              LocalDateTime lastModifiedData){
+                              LocalDateTime lastModifiedData) { // TODO: Add quantity and active
 }

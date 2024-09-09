@@ -39,6 +39,10 @@ public class Item extends AuditableEntity {
     @Column(name = "item_description")
     private String description;
 
+    @PositiveOrZero
+    @Column(name = "item_quantity")
+    private int quantity = 1;
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id")
@@ -50,6 +54,12 @@ public class Item extends AuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @Column(name = "item_active")
+    private boolean active = false;
+
+    @Version
+    private short version;
 
     protected Item() {
     }
@@ -142,6 +152,14 @@ public class Item extends AuditableEntity {
         this.description = description;
     }
 
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     public Member getSeller() {
         return seller;
     }
@@ -166,16 +184,34 @@ public class Item extends AuditableEntity {
         this.category = category;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public short getVersion() {
+        return version;
+    }
+
+    public void setVersion(short version) {
+        this.version = version;
+    }
+
     @Override
     public String toString() {
         return "Item{" +
-                "key=" + id +
+                "id=" + id +
                 ", title='" + title + '\'' +
                 ", price=" + price +
                 ", description='" + description + '\'' +
+                ", quantity=" + quantity +
                 ", seller=" + seller +
                 ", mediaList=" + mediaList +
                 ", category=" + category +
+                ", active=" + active +
                 '}';
     }
 }

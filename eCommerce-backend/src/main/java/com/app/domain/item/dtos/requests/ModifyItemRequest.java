@@ -12,11 +12,14 @@ import static com.app.global.constants.UserInputConstants.TITLE_LENGTH_MIN;
 
 public record ModifyItemRequest(
 
-        @Size(min = TITLE_LENGTH_MIN, max= TITLE_LENGTH_MAX)
+        @Size(min = TITLE_LENGTH_MIN, max = TITLE_LENGTH_MAX)
         String title,
 
         @PositiveOrZero
         BigDecimal price,
+
+        @PositiveOrZero
+        Integer quantity,
 
         String description,
 

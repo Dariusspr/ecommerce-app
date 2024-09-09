@@ -16,7 +16,6 @@ import com.app.utils.domain.item.RandomCategoryBuilder;
 import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.domain.member.RandomMemberBuilder;
 import com.app.utils.global.StringUtils;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,7 +37,6 @@ import static org.mockito.BDDMockito.given;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
-@Tag("Integration test")
 public class ItemServiceTest {
     private static final int PAGE_SIZE = 5;
 
@@ -281,7 +279,7 @@ public class ItemServiceTest {
         ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
         assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
         // setup modification request
-        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null);
+        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null, null);
 
         ItemSummaryDTO itemSummaryDTO2 = itemService.modify(itemSummaryDTO1.id(), modifyItemRequest);
 
@@ -304,7 +302,7 @@ public class ItemServiceTest {
         ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
         assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
         // setup modification request
-        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null);
+        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null, null);
         // different member
         Member otherSeller = new RandomMemberBuilder().create();
         given(authentication.getPrincipal()).willReturn(otherSeller);
