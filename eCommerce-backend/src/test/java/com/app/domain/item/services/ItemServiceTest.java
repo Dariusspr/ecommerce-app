@@ -247,6 +247,24 @@ public class ItemServiceTest {
         assertEquals(PAGE_SIZE, returnedItemPage2.getNumberOfElements());
     }
 
+    @Test
+    void findAllByActive_ok() {
+        Member seller = new RandomMemberBuilder().create();
+        memberService.save(seller);
+        List<Item> inactiveItemList = new RandomItemBuilder(seller)
+                .create(PAGE_SIZE - 1);
+        List<Item> activeItemList = new RandomItemBuilder(seller)
+                .withActive()
+                .create(PAGE_SIZE);
+        inactiveItemList.forEach(itemService::save);
+        activeItemList.forEach(itemService::save);
+
+        Page<ItemSummaryDTO> returnedActivePage = itemService.findAllByActive(true, pageable0);
+        Page<ItemSummaryDTO> returnedInactivePage = itemService.findAllByActive(false, pageable0);
+
+        assertEquals(PAGE_SIZE - 1, returnedInactivePage.getNumberOfElements());
+        assertEquals(PAGE_SIZE, returnedActivePage.getNumberOfElements());
+    }
 
     @Test
     void create_ok() {

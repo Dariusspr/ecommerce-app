@@ -115,6 +115,11 @@ public class ItemService {
         return itemPage.map(ItemMapper::toItemSummaryDTO);
     }
 
+    public Page<ItemSummaryDTO> findAllByActive(boolean active, Pageable pageable) {
+        Page<Item> itemPage = itemRepository.findAllByActive(active, pageable);
+        return itemPage.map(ItemMapper::toItemSummaryDTO);
+    }
+
     public Item validateAndReduceQuantity(UUID itemId, int reduceQuantity) {
         Item item = findByIdWithLock(itemId);
 

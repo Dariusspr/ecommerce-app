@@ -29,6 +29,7 @@ public class RandomItemBuilder {
     private boolean withMedia;
     private boolean withId;
     private boolean withAuditable;
+    private boolean withActive;
 
     public RandomItemBuilder() {
     }
@@ -57,6 +58,11 @@ public class RandomItemBuilder {
         return this;
     }
 
+    public RandomItemBuilder withActive() {
+        this.withActive = true;
+        return this;
+    }
+
     public Item create() {
         Member seller = Objects.requireNonNullElseGet(
                 customSeller,
@@ -70,6 +76,8 @@ public class RandomItemBuilder {
             generateAndBindMedia(item);
         if (withAuditable)
             setAuditable(item);
+        if (withActive)
+            item.setActive(true);
         return item;
     }
 

@@ -11,10 +11,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -75,5 +72,15 @@ public class ItemController {
             Long categoryId, Pageable pageable) {
         Page<ItemSummaryDTO> itemSummaryDto = itemService.findByCategoryId(categoryId, pageable);
         return ResponseEntity.ok(itemSummaryDto);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<Page<ItemSummaryDTO>> getByActive(
+            @RequestParam(name = "active",
+                    required = false,
+                    defaultValue = "true")
+            boolean active,
+            Pageable pageable) {
+        return ResponseEntity.ok(itemService.findAllByActive(active, pageable));
     }
 }

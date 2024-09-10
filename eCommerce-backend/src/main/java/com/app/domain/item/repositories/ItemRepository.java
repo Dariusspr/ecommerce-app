@@ -29,4 +29,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
     @Query("SELECT i FROM Item i WHERE i.seller = :seller")
     Page<Item> findBySeller(@Param("seller") Member seller, Pageable pageable);
+
+    @Query("SELECT i FROM Item i WHERE i.active = :active")
+    Page<Item> findAllByActive(@Param("active") boolean active, Pageable pageable);
 }

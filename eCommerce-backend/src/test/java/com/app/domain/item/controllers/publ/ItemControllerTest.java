@@ -245,4 +245,48 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.content.size()", is(0)));
     }
 
+
+    @Test
+    void getByActive_defaultOrTrue_returnOk() throws Exception {
+        final List<Item> items = new RandomItemBuilder()
+                .withCategory()
+                .withId()
+                .withMedia()
+                .withAuditable()
+                .create(itemCount);
+        final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
+        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
+                itemSummaryDTOList,
+                pageable,
+                itemSummaryDTOList.size());
+        given(itemService.findAllByActive(true, pageable)).willReturn(itemSummaryDTOPage);
+
+        mockMvc.perform(get(ItemController.BASE_URL + "/active"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.size()", is(itemCount)));
+    }
+
+    @Test
+    void getByActive_false_returnOk() throws Exception {
+        final List<Item> items = new RandomItemBuilder()
+                .withCategory()
+                .withId()
+                .withMedia()
+                .withAuditable()
+                .create(itemCount);
+        final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
+        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
+                itemSummaryDTOList,
+                pageable,
+                itemSummaryDTOList.size());
+        given(itemService.findAllByActive(false, pageable)).willReturn(itemSummaryDTOPage);
+
+        mockMvc.perform(get(ItemController.BASE_URL + "/active")
+                        .param("active", "false"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.size()", is(itemCount)));
+    }
+
 }
