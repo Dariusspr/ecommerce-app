@@ -8,7 +8,9 @@ import com.app.domain.item.services.CategoryService;
 import com.app.global.config.security.JwtAuthenticationFilter;
 import com.app.global.constants.ExceptionMessages;
 import com.app.utils.domain.item.RandomCategoryBuilder;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = CategoryController.class)
 @ExtendWith(MockitoExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc(addFilters = false)
 public class CategoryControllerTest {
 
@@ -39,6 +42,18 @@ public class CategoryControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private long parentId = 1;
+    private Category category;
+    private CategoryDTO categoryDTO;
+
+    @BeforeAll
+    void setup() {
+        category = new RandomCategoryBuilder()
+                .withId()
+                .create();
+        categoryDTO = CategoryMapper.toCategoryDTO(category);
+    }
 
     @Test
     public void getRootCategories_returnsOkEmpty() throws Exception {
@@ -66,18 +81,17 @@ public class CategoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(rootCount)))
-                .andExpect(jsonPath("$[0].id", is(categoryDTOList.getFirst().id())))
+                .andExpect(jsonPath("$[0].id", is(categoryDTOList.getFirst().id().intValue())))
                 .andExpect(jsonPath("$[0].title", is(categoryDTOList.getFirst().title())))
                 .andExpect(jsonPath("$[0].hasChildren", is(categoryDTOList.getFirst().hasChildren())))
-                .andExpect(jsonPath("$[1].id", is(categoryDTOList.get(1).id())));
+                .andExpect(jsonPath("$[1].id", is(categoryDTOList.get(1).id().intValue())));
     }
 
     @Test
     public void getCategoryById_returnNotFound() throws Exception {
-        long id = 1;
-        given(categoryService.findDtoById(id)).willThrow(new CategoryNotFoundException());
+        given(categoryService.findDtoById(category.getId())).willThrow(new CategoryNotFoundException());
 
-        mockMvc.perform(get(CategoryController.BASE_URL + "/" + id)
+        mockMvc.perform(get(CategoryController.BASE_URL + "/" + category.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -86,25 +100,22 @@ public class CategoryControllerTest {
 
     @Test
     public void getCategoryById_returnOk() throws Exception {
-        Category category = new RandomCategoryBuilder().withId().create();
-        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
         given(categoryService.findDtoById(category.getId())).willReturn(categoryDTO);
 
         mockMvc.perform(get(CategoryController.BASE_URL + "/" + category.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(categoryDTO.id())))
+                .andExpect(jsonPath("$.id", is(categoryDTO.id().intValue())))
                 .andExpect(jsonPath("$.title", is(categoryDTO.title())))
                 .andExpect(jsonPath("$.hasChildren", is(categoryDTO.hasChildren())));
     }
 
     @Test
     public void getCategoryByTitle_returnNotFound() throws Exception {
-        String title = RandomCategoryBuilder.getTitle();
-        given(categoryService.findByTitle(title)).willThrow(new CategoryNotFoundException());
+        given(categoryService.findByTitle(category.getTitle())).willThrow(new CategoryNotFoundException());
 
-        mockMvc.perform(get(CategoryController.BASE_URL + "/title/" + title)
+        mockMvc.perform(get(CategoryController.BASE_URL + "/title/" + category.getTitle())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -113,23 +124,19 @@ public class CategoryControllerTest {
 
     @Test
     public void getCategoryByTitle_returnOk() throws Exception {
-        Category category = new RandomCategoryBuilder().withId().create();
-        String title = category.getTitle();
-        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
-        given(categoryService.findByTitle(title)).willReturn(categoryDTO);
+        given(categoryService.findByTitle(category.getTitle())).willReturn(categoryDTO);
 
-        mockMvc.perform(get(CategoryController.BASE_URL + "/title/" + title)
+        mockMvc.perform(get(CategoryController.BASE_URL + "/title/" + category.getTitle())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(categoryDTO.id())))
+                .andExpect(jsonPath("$.id", is(categoryDTO.id().intValue())))
                 .andExpect(jsonPath("$.title", is(categoryDTO.title())))
                 .andExpect(jsonPath("$.hasChildren", is(categoryDTO.hasChildren())));
     }
 
     @Test
     public void getCategoriesByParentId_returnOkEmpty() throws Exception {
-        long parentId = 1;
         given(categoryService.findByParentId(parentId)).willReturn(Collections.emptyList());
 
         mockMvc.perform(get(CategoryController.BASE_URL + "/parent/" + parentId)
@@ -141,7 +148,6 @@ public class CategoryControllerTest {
 
     @Test
     public void getCategoriesByParentId_returnOkFive() throws Exception {
-        long parentId = 1;
         final int childrenCount = 5;
         List<Category> categoryList = new RandomCategoryBuilder().withId().create(childrenCount);
         List<CategoryDTO> categoryDTOList = CategoryMapper.toCategoryDTO(categoryList);
@@ -152,10 +158,10 @@ public class CategoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(childrenCount)))
-                .andExpect(jsonPath("$[0].id", is(categoryDTOList.getFirst().id())))
+                .andExpect(jsonPath("$[0].id", is(categoryDTOList.getFirst().id().intValue())))
                 .andExpect(jsonPath("$[0].title", is(categoryDTOList.getFirst().title())))
                 .andExpect(jsonPath("$[0].hasChildren", is(categoryDTOList.getFirst().hasChildren())))
-                .andExpect(jsonPath("$[1].id", is(categoryDTOList.get(1).id())));
+                .andExpect(jsonPath("$[1].id", is(categoryDTOList.get(1).id().intValue())));
     }
 
 }

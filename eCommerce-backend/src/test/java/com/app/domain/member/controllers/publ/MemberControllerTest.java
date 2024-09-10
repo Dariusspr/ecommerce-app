@@ -62,7 +62,7 @@ public class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(member.getId())))
+                .andExpect(jsonPath("$.id", is(member.getId().intValue())))
                 .andExpect(jsonPath("$.username", is(member.getUsername())))
                 .andExpect(jsonPath("$.profile.title", is(member.getProfile().title())))
                 .andExpect(jsonPath("$.profile.url", is(member.getProfile().url())))

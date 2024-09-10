@@ -93,19 +93,19 @@ public class ItemService {
         return ItemMapper.toItemDetailedDTO(item);
     }
 
-    public Page<ItemSummaryDTO> findByCategoryId(Long categoryId, Pageable pageable) {
+    public Page<ItemSummaryDTO> findAllByCategoryId(Long categoryId, Pageable pageable) {
         Set<Category> categories = categoryService.findFrom(categoryId);
         Page<Item> itemPage = itemRepository.findByCategories(categories, pageable);
         return itemPage.map(ItemMapper::toItemSummaryDTO);
     }
 
-    public Page<ItemSummaryDTO> findBySellerId(Long sellerId, Pageable pageable) {
+    public Page<ItemSummaryDTO> findAllBySellerId(Long sellerId, Pageable pageable) {
         Member seller = memberService.findById(sellerId);
         Page<Item> itemPage = itemRepository.findBySeller(seller, pageable);
         return itemPage.map(ItemMapper::toItemSummaryDTO);
     }
 
-    public Page<ItemSummaryDTO> findByTitle(String title, Pageable pageable) {
+    public Page<ItemSummaryDTO> findAllByTitle(String title, Pageable pageable) {
         Page<Item> itemPage = itemRepository.findByTitle(title, pageable);
         return itemPage.map(ItemMapper::toItemSummaryDTO);
     }
@@ -132,8 +132,6 @@ public class ItemService {
 
         return item;
     }
-
-    // TODO: find methods for only active items
 
     // TODO: update active state
 

@@ -127,7 +127,7 @@ public class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.member.id", is(member.getId())))
+                .andExpect(jsonPath("$.member.id", is(member.getId().intValue())))
                 .andExpect(jsonPath("$.member.username", is(member.getUsername())))
                 .andExpect(jsonPath("$.member.profile.title", is(member.getProfile().title())))
                 .andExpect(jsonPath("$.member.profile.url", is(member.getProfile().url())))

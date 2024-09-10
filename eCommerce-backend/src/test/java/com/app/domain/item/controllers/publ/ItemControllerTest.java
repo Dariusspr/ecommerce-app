@@ -11,7 +11,9 @@ import com.app.global.constants.ExceptionMessages;
 import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.global.NumberUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,10 +41,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = ItemController.class)
 @ExtendWith(MockitoExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc(addFilters = false)
 public class ItemControllerTest {
-    private static final int PAGE_NUMBER_0 = 0;
-    private static final int PAGE_SIZE = 20;
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,26 +55,40 @@ public class ItemControllerTest {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private final int itemCount = 5;
-    private final Pageable pageable = PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE);
+    private static final int PAGE_SIZE = 20;
+    private static final Pageable DEFAULT_PAGEABLE = PageRequest.of(0, PAGE_SIZE);
 
-    @Test
-    void getAll_returnOK() throws Exception {
-        final List<Item> items = new RandomItemBuilder()
+    private List<Item> items;
+    private Page<ItemSummaryDTO> itemSummaryDtoPage;
+    private Item item;
+    private ItemDetailedDTO itemDetailedDto;
+    private ItemSummaryDTO itemSummaryDto;
+
+    @BeforeAll
+    void setup() {
+        items = new RandomItemBuilder()
                 .withCategory()
                 .withId()
                 .withMedia()
                 .withAuditable()
                 .create(itemCount);
         final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
-        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
+        itemSummaryDtoPage = new PageImpl<>(
                 itemSummaryDTOList,
-                pageable,
+                DEFAULT_PAGEABLE,
                 itemSummaryDTOList.size());
-        given(itemService.findAll(pageable)).willReturn(itemSummaryDTOPage);
+        item = items.getFirst();
+        itemDetailedDto = ItemMapper.toItemDetailedDTO(item);
+        itemSummaryDto = itemSummaryDTOList.getFirst();
+    }
+
+    @Test
+    void getAll_returnOK() throws Exception {
+        given(itemService.findAll(DEFAULT_PAGEABLE)).willReturn(itemSummaryDtoPage);
 
         mockMvc.perform(get(ItemController.BASE_URL)
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -83,11 +97,11 @@ public class ItemControllerTest {
 
     @Test
     void getAll_returnEmpty() throws Exception {
-        given(itemService.findAll(pageable)).willReturn(Page.empty());
+        given(itemService.findAll(DEFAULT_PAGEABLE)).willReturn(Page.empty());
 
         mockMvc.perform(get(ItemController.BASE_URL)
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -96,14 +110,7 @@ public class ItemControllerTest {
 
     @Test
     void getById_returnOk() throws Exception {
-        final Item item = new RandomItemBuilder()
-                .withCategory()
-                .withId()
-                .withMedia()
-                .withAuditable()
-                .create();
-        final ItemDetailedDTO itemDetailedDTO = ItemMapper.toItemDetailedDTO(item);
-        given(itemService.findDetailedById(item.getId())).willReturn(itemDetailedDTO);
+        given(itemService.findDetailedById(item.getId())).willReturn(itemDetailedDto);
 
         mockMvc.perform(get(ItemController.BASE_URL + "/" + item.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -136,22 +143,11 @@ public class ItemControllerTest {
 
     @Test
     void getByTitle_returnOk() throws Exception {
-        final List<Item> items = new RandomItemBuilder()
-                .withCategory()
-                .withId()
-                .withMedia()
-                .withAuditable()
-                .create(itemCount);
-        final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
-        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
-                itemSummaryDTOList,
-                pageable,
-                itemSummaryDTOList.size());
-        given(itemService.findByTitle(anyString(), any())).willReturn(itemSummaryDTOPage);
+        given(itemService.findAllByTitle(anyString(), any())).willReturn(itemSummaryDtoPage);
 
         mockMvc.perform(get(ItemController.BASE_URL + "/title/" + RandomStringUtils.randomAlphanumeric(TITLE_LENGTH_MIN, TITLE_LENGTH_MAX))
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -160,11 +156,11 @@ public class ItemControllerTest {
 
     @Test
     void getByTitle_returnEmpty() throws Exception {
-        given(itemService.findByTitle(anyString(), any())).willReturn(Page.empty());
+        given(itemService.findAllByTitle(anyString(), any())).willReturn(Page.empty());
 
         mockMvc.perform(get(ItemController.BASE_URL + "/title/" + RandomStringUtils.randomAlphanumeric(TITLE_LENGTH_MIN, TITLE_LENGTH_MAX))
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -173,22 +169,11 @@ public class ItemControllerTest {
 
     @Test
     void getBySeller_returnOk() throws Exception {
-        final List<Item> items = new RandomItemBuilder()
-                .withCategory()
-                .withId()
-                .withMedia()
-                .withAuditable()
-                .create(itemCount);
-        final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
-        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
-                itemSummaryDTOList,
-                pageable,
-                itemSummaryDTOList.size());
-        given(itemService.findBySellerId(anyLong(), any())).willReturn(itemSummaryDTOPage);
+        given(itemService.findAllBySellerId(anyLong(), any())).willReturn(itemSummaryDtoPage);
 
         mockMvc.perform(get(ItemController.BASE_URL + "/seller/" + NumberUtils.getId())
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -197,11 +182,11 @@ public class ItemControllerTest {
 
     @Test
     void getBySeller_returnEmpty() throws Exception {
-        given(itemService.findBySellerId(anyLong(), any())).willReturn(Page.empty());
+        given(itemService.findAllBySellerId(anyLong(), any())).willReturn(Page.empty());
 
         mockMvc.perform(get(ItemController.BASE_URL + "/seller/" + NumberUtils.getId())
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -210,22 +195,11 @@ public class ItemControllerTest {
 
     @Test
     void getByCategory_returnOk() throws Exception {
-        final List<Item> items = new RandomItemBuilder()
-                .withCategory()
-                .withId()
-                .withMedia()
-                .withAuditable()
-                .create(itemCount);
-        final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
-        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
-                itemSummaryDTOList,
-                pageable,
-                itemSummaryDTOList.size());
-        given(itemService.findByCategoryId(anyLong(), any())).willReturn(itemSummaryDTOPage);
+        given(itemService.findAllByCategoryId(anyLong(), any())).willReturn(itemSummaryDtoPage);
 
         mockMvc.perform(get(ItemController.BASE_URL + "/category/" + NumberUtils.getId())
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -234,11 +208,11 @@ public class ItemControllerTest {
 
     @Test
     void getByCategory_returnEmpty() throws Exception {
-        given(itemService.findByCategoryId(anyLong(), any())).willReturn(Page.empty());
+        given(itemService.findAllByCategoryId(anyLong(), any())).willReturn(Page.empty());
 
         mockMvc.perform(get(ItemController.BASE_URL + "/category/" + NumberUtils.getId())
-                        .param("page", String.valueOf(pageable.getPageNumber()))
-                        .param("size", String.valueOf(pageable.getPageSize()))
+                        .param("page", String.valueOf(DEFAULT_PAGEABLE.getPageNumber()))
+                        .param("size", String.valueOf(DEFAULT_PAGEABLE.getPageSize()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -248,18 +222,7 @@ public class ItemControllerTest {
 
     @Test
     void getByActive_defaultOrTrue_returnOk() throws Exception {
-        final List<Item> items = new RandomItemBuilder()
-                .withCategory()
-                .withId()
-                .withMedia()
-                .withAuditable()
-                .create(itemCount);
-        final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
-        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
-                itemSummaryDTOList,
-                pageable,
-                itemSummaryDTOList.size());
-        given(itemService.findAllByActive(true, pageable)).willReturn(itemSummaryDTOPage);
+        given(itemService.findAllByActive(true, DEFAULT_PAGEABLE)).willReturn(itemSummaryDtoPage);
 
         mockMvc.perform(get(ItemController.BASE_URL + "/active"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -269,18 +232,7 @@ public class ItemControllerTest {
 
     @Test
     void getByActive_false_returnOk() throws Exception {
-        final List<Item> items = new RandomItemBuilder()
-                .withCategory()
-                .withId()
-                .withMedia()
-                .withAuditable()
-                .create(itemCount);
-        final List<ItemSummaryDTO> itemSummaryDTOList = items.stream().map(ItemMapper::toItemSummaryDTO).toList();
-        final Page<ItemSummaryDTO> itemSummaryDTOPage = new PageImpl<>(
-                itemSummaryDTOList,
-                pageable,
-                itemSummaryDTOList.size());
-        given(itemService.findAllByActive(false, pageable)).willReturn(itemSummaryDTOPage);
+        given(itemService.findAllByActive(false, DEFAULT_PAGEABLE)).willReturn(itemSummaryDtoPage);
 
         mockMvc.perform(get(ItemController.BASE_URL + "/active")
                         .param("active", "false"))
@@ -288,5 +240,4 @@ public class ItemControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()", is(itemCount)));
     }
-
 }

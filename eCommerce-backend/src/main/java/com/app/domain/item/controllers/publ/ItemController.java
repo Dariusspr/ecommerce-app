@@ -50,7 +50,7 @@ public class ItemController {
             @NotBlank
             @Size(min = TITLE_LENGTH_MIN, max = TITLE_LENGTH_MAX)
             String title, Pageable pageable) {
-        Page<ItemSummaryDTO> itemSummaryDto = itemService.findByTitle(title, pageable);
+        Page<ItemSummaryDTO> itemSummaryDto = itemService.findAllByTitle(title, pageable);
         return ResponseEntity.ok(itemSummaryDto);
     }
 
@@ -60,7 +60,7 @@ public class ItemController {
             @NotNull
             @PositiveOrZero
             Long id, Pageable pageable) {
-        Page<ItemSummaryDTO> itemSummaryDto = itemService.findBySellerId(id, pageable);
+        Page<ItemSummaryDTO> itemSummaryDto = itemService.findAllBySellerId(id, pageable);
         return ResponseEntity.ok(itemSummaryDto);
     }
 
@@ -70,7 +70,7 @@ public class ItemController {
             @NotNull
             @PositiveOrZero
             Long categoryId, Pageable pageable) {
-        Page<ItemSummaryDTO> itemSummaryDto = itemService.findByCategoryId(categoryId, pageable);
+        Page<ItemSummaryDTO> itemSummaryDto = itemService.findAllByCategoryId(categoryId, pageable);
         return ResponseEntity.ok(itemSummaryDto);
     }
 

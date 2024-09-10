@@ -91,7 +91,7 @@ public class ItemReviewControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(reviewDTO.id())))
+                .andExpect(jsonPath("$.id", is(reviewDTO.id().intValue())))
                 .andExpect(jsonPath("$.author", notNullValue()))
                 .andExpect(jsonPath("$.rating", is(reviewDTO.rating())))
                 .andExpect(jsonPath("$.comment", notNullValue()));
@@ -172,7 +172,7 @@ public class ItemReviewControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(reviewDTO.id())))
+                .andExpect(jsonPath("$.id", is(reviewDTO.id().intValue())))
                 .andExpect(jsonPath("$.author", notNullValue()))
                 .andExpect(jsonPath("$.rating", is(reviewDTO.rating())))
                 .andExpect(jsonPath("$.comment", notNullValue()));
