@@ -21,6 +21,8 @@ public record ModifyItemRequest(
         @PositiveOrZero
         Integer quantity,
 
+        Boolean active,
+
         String description,
 
         List<MultipartFile> media,

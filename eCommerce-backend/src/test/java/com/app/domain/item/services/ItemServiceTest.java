@@ -279,7 +279,9 @@ public class ItemServiceTest {
         ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
         assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
         // setup modification request
-        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null, null);
+        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle",
+                null, null, null,
+                null, null, null);
 
         ItemSummaryDTO itemSummaryDTO2 = itemService.modify(itemSummaryDTO1.id(), modifyItemRequest);
 
@@ -302,7 +304,9 @@ public class ItemServiceTest {
         ItemSummaryDTO itemSummaryDTO1 = itemService.create(request);
         assertDoesNotThrow(() -> itemService.findById(itemSummaryDTO1.id()));
         // setup modification request
-        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle", null, null, null, null, null);
+        ModifyItemRequest modifyItemRequest = new ModifyItemRequest("NewTitle",
+                null, null, null,
+                null, null, null);
         // different member
         Member otherSeller = new RandomMemberBuilder().create();
         given(authentication.getPrincipal()).willReturn(otherSeller);

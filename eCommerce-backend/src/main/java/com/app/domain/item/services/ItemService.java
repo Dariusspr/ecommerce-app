@@ -150,6 +150,9 @@ public class ItemService {
         if (request.quantity() != null) {
             item.setQuantity(request.quantity());
         }
+        if (request.active() != null) {
+            item.setActive(request.active());
+        }
         if (request.description() != null && !request.description().isEmpty()) {
             item.setDescription(request.description());
         }

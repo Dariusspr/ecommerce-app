@@ -29,6 +29,8 @@ public class ItemMapper {
                 item.getTitle(),
                 item.getPrice(),
                 item.getDescription(),
+                item.getQuantity(),
+                item.isActive(),
                 toMemberSummaryDTO(item.getSeller()), mediaDTOList,
                 categoryTitle,
                 item.getCreatedDate().truncatedTo(ChronoUnit.SECONDS),
@@ -41,10 +43,20 @@ public class ItemMapper {
                 .stream()
                 .map(ItemMediaMapper::toItemMediaDTO)
                 .toList();
-        return new ItemSummaryDTO(item.getId(), item.getTitle(), item.getPrice(), mediaDTOList);
+        return new ItemSummaryDTO(
+                item.getId(),
+                item.getTitle(),
+                item.getPrice(),
+                item.isActive(),
+                mediaDTOList);
     }
 
     public static Item toItem(NewItemRequest request, Category category, Member seller) {
-        return new Item(request.title(), request.price(), request.description(), seller, category);
+        return new Item(
+                request.title(),
+                request.price(),
+                request.description(),
+                seller,
+                category);
     }
 }

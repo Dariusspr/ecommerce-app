@@ -73,7 +73,9 @@ public class ItemControllerTest {
     @Test
     void create_returnOk() throws Exception {
         Item item = new RandomItemBuilder().create();
-        NewItemRequest itemRequest = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
+        NewItemRequest itemRequest = new NewItemRequest(item.getTitle(), item.getPrice(),
+                item.getDescription(), Collections.emptyList(),
+                null);
         ItemSummaryDTO itemSummaryDTO = ItemMapper.toItemSummaryDTO(item);
         MockMultipartFile mockFile = new MockMultipartFile(
                 "media",
@@ -100,7 +102,9 @@ public class ItemControllerTest {
     @Test
     void create_returnNotFound() throws Exception {
         Item item = new RandomItemBuilder().create();
-        NewItemRequest itemRequest = new NewItemRequest(item.getTitle(), item.getPrice(), item.getDescription(), Collections.emptyList(), null);
+        NewItemRequest itemRequest = new NewItemRequest(item.getTitle(), item.getPrice(),
+                item.getDescription(), Collections.emptyList(),
+                null);
         MockMultipartFile mockFile = new MockMultipartFile(
                 "media",
                 "image.png",
@@ -130,7 +134,9 @@ public class ItemControllerTest {
                 "image/png",
                 "<Image>".getBytes()
         );
-        ModifyItemRequest itemRequest = new ModifyItemRequest(item.getTitle(), null, null, null, List.of(mockFile), null);
+        ModifyItemRequest itemRequest = new ModifyItemRequest(item.getTitle(),
+                null, null, null,
+                null, List.of(mockFile), null);
         ItemSummaryDTO itemSummaryDTO = ItemMapper.toItemSummaryDTO(item);
 
         given(itemService.modify(item.getId(), itemRequest)).willReturn(itemSummaryDTO);
@@ -162,7 +168,9 @@ public class ItemControllerTest {
                 "image/png",
                 "<Image>".getBytes()
         );
-        ModifyItemRequest itemRequest = new ModifyItemRequest(item.getTitle(), null, null, null, List.of(mockFile), null);
+        ModifyItemRequest itemRequest = new ModifyItemRequest(item.getTitle(),
+                null, null, null,
+                null, List.of(mockFile), null);
         doThrow(new ForbiddenException()).when(itemService).modify(any(), any());
 
         mockMvc.perform(MockMvcRequestBuilders.multipart(ItemController.BASE_URL + "/" + item.getId())
