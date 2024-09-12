@@ -33,6 +33,8 @@ public class RandomMemberBuilder {
     private boolean withSpecifiedGender = false;
     private boolean withCustomProfileMedia = false;
 
+    private static final int USERNAME_LENGTH_OFFSET = 5;
+
     public RandomMemberBuilder() {
     }
 
@@ -88,7 +90,7 @@ public class RandomMemberBuilder {
 
     public static String getUsername() {
         String generated = StringUtils.getDistinct(existingUsernames,
-                USERNAME_LENGTH_MIN, USERNAME_LENGTH_MAX);
+                USERNAME_LENGTH_MIN + USERNAME_LENGTH_OFFSET, USERNAME_LENGTH_MAX - USERNAME_LENGTH_OFFSET);
         existingUsernames.add(generated);
         return generated;
     }

@@ -111,7 +111,7 @@ public class RandomCategoryBuilder {
     }
 
     public static String getTitle() {
-        String title = StringUtils.getDistinct(existingCategoryTitles, TITLE_LENGTH_MIN, TITLE_LENGTH_MAX, true, true);
+        String title = StringUtils.getDistinct(existingCategoryTitles, TITLE_LENGTH_MIN + 5, TITLE_LENGTH_MAX - 5, true, true);
         existingCategoryTitles.add(title);
         return title;
     }

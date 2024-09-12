@@ -19,7 +19,7 @@ public class NumberUtils {
     }
 
     public static long getId() {
-        return random.nextLong() & Long.MAX_VALUE;
+        return (random.nextLong() & Long.MAX_VALUE) % 1000;
     }
 
     public static long getLong(long min, long max) {

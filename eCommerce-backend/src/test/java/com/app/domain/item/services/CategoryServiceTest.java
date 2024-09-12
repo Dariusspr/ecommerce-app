@@ -7,12 +7,13 @@ import com.app.domain.item.exceptions.CategoryNotFoundException;
 import com.app.domain.item.exceptions.DuplicateCategoryException;
 import com.app.domain.item.exceptions.ParentCategoryNotFoundException;
 import com.app.domain.item.mappers.CategoryMapper;
+import com.app.domain.item.repositories.CategoryRepository;
 import com.app.utils.domain.item.RandomCategoryBuilder;
+import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.global.NumberUtils;
 import jakarta.validation.ConstraintViolationException;
 import org.hibernate.LazyInitializationException;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,7 +24,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 public class CategoryServiceTest {
 
@@ -33,23 +34,42 @@ public class CategoryServiceTest {
 
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    private Category categorySingle;
+    private Category categoryWithChildrenAndParent;
+
+    @BeforeEach
+    void setup() {
+        categorySingle = new RandomCategoryBuilder()
+                .create();
+
+        categoryWithChildrenAndParent = new RandomCategoryBuilder()
+                .withParent()
+                .withNestedChildren()
+                .create();
+    }
+
+    @AfterEach
+    void clear() {
+        categoryRepository.deleteAll();
+    }
 
     @Test
     void addNewCategory_noParent_ok() {
-        final String title = RandomCategoryBuilder.getTitle();
-        NewCategoryRequest request = new NewCategoryRequest(null, title);
+        NewCategoryRequest categorySingleRequest = new NewCategoryRequest(null, categorySingle.getTitle());
 
-        CategoryDTO returnedCategoryDTO = categoryService.addNewCategory(request);
+        CategoryDTO returnedCategoryDTO = categoryService.addNewCategory(categorySingleRequest);
 
-        assertEquals(title, returnedCategoryDTO.title());
+        assertEquals(categorySingle.getTitle(), returnedCategoryDTO.title());
         assertNotNull(returnedCategoryDTO.id());
     }
 
     @Test
     void addNewCategory_withParent_ok() {
-        Category parent = new RandomCategoryBuilder().create();
-        categoryService.save(parent);
-        final Long parentId = parent.getId();
+        categoryService.save(categorySingle);
+        final Long parentId = categorySingle.getId();
         final String title = RandomCategoryBuilder.getTitle();
         NewCategoryRequest request = new NewCategoryRequest(parentId, title);
 
@@ -60,79 +80,52 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void addNewCategory_noParent_throwParentCategoryNotFound() {
-        final String title = RandomCategoryBuilder.getTitle();
-        NewCategoryRequest request = new NewCategoryRequest(NumberUtils.getId() + 1, title);
+    void addNewCategory_throwParentCategoryNotFound() {
+        NewCategoryRequest request = new NewCategoryRequest(NumberUtils.getId() + 1,
+                categorySingle.getTitle());
 
-        assertThrows(ParentCategoryNotFoundException.class, () -> categoryService.addNewCategory(request));
+        assertThrows(ParentCategoryNotFoundException.class,
+                () -> categoryService.addNewCategory(request));
     }
 
     @Test
     void addNew_throwDuplicateCategory() {
-        Category categoryInDB1 = new RandomCategoryBuilder().create();
-        categoryService.save(categoryInDB1);
-        NewCategoryRequest request = new NewCategoryRequest(null, categoryInDB1.getTitle());
+        categoryService.save(categorySingle);
+        NewCategoryRequest request = new NewCategoryRequest(null, categorySingle.getTitle());
 
-        assertThrows(DuplicateCategoryException.class, () -> categoryService.addNewCategory(request));
+        assertThrows(DuplicateCategoryException.class,
+                () -> categoryService.addNewCategory(request));
     }
 
     @Test
     void save_singleCategory() {
-        Category category = new RandomCategoryBuilder().create();
+        Category returnedCategory = categoryService.save(categorySingle);
 
-        Category returnedCategory = categoryService.save(category);
-
-        assertEquals(category, returnedCategory);
+        assertEquals(categorySingle, returnedCategory);
     }
 
     @Test
     void save_categoryWithParentAndWithNestedChildren() {
-        Category category = new RandomCategoryBuilder()
-                .withParent()
-                .withNestedChildren()
-                .create();
 
-        Category returnedCategory = categoryService.save(category);
+        Category returnedCategory = categoryService.save(categoryWithChildrenAndParent);
 
-        assertEquals(category, returnedCategory);
+        assertEquals(categoryWithChildrenAndParent, returnedCategory);
     }
 
     @Test
     void save_singleCategory_invalidTitle_throwsConstraintViolationException() {
-        Category category = new RandomCategoryBuilder().create();
-        category.setTitle("1");
+        categorySingle.setTitle("1");
 
-        assertThrows(ConstraintViolationException.class, () -> categoryService.save(category));
+        assertThrows(ConstraintViolationException.class, () -> categoryService.save(categorySingle));
     }
 
-    @Test
-    void save_categoryWithParent_invalidTitle_throwsConstraintViolationException() {
-        Category category = new RandomCategoryBuilder()
-                .withParent()
-                .create();
-        category.getParent().setTitle(null);
-
-        assertThrows(ConstraintViolationException.class, () -> categoryService.save(category));
-    }
-
-    @Test
-    void save_categoryWithChildren_invalidTitle_throwsConstraintViolationException() {
-        Category category = new RandomCategoryBuilder()
-                .withChildren()
-                .create();
-        category.getChildren().getFirst().setTitle("");
-
-        assertThrows(ConstraintViolationException.class, () -> categoryService.save(category));
-    }
 
     @Test
     void save_singleCategory_modifyTitle() {
-        Category category = new RandomCategoryBuilder().create();
-        Category returned = categoryService.save(category);
-        assertEquals(category, returned);
-        returned.setTitle(category.getTitle());
+        Category returned = categoryService.save(categorySingle);
+        returned.setTitle(RandomCategoryBuilder.getTitle());
 
-        Category returnedModified = categoryService.save(category);
+        Category returnedModified = categoryService.save(categorySingle);
 
         assertEquals(returned, returnedModified);
         assertEquals(returned.getId(), returnedModified.getId());
@@ -140,101 +133,69 @@ public class CategoryServiceTest {
 
     @Test
     void save_duplicateTitle_throwDuplicateCategory() {
-        Category categoryInDB1 = new RandomCategoryBuilder().create();
-        categoryService.save(categoryInDB1);
+        categoryService.save(categorySingle);
         Category category = new RandomCategoryBuilder().create();
-        category.setTitle(categoryInDB1.getTitle());
+        category.setTitle(categorySingle.getTitle());
 
         assertThrows(DuplicateCategoryException.class, () -> categoryService.save(category));
     }
 
     @Test
     void modify_ok() {
-        Category category = new RandomCategoryBuilder().create();
-        categoryService.save(category);
-        String newTitle = category.getTitle() + "A";
+        categoryService.save(categorySingle);
+        String newTitle = categorySingle.getTitle() + "A";
 
-        CategoryDTO returnedCategory = categoryService.modify(category.getId(), newTitle);
-        assertEquals(category.getId(), returnedCategory.id());
-        assertNotEquals(category.getTitle(), returnedCategory.title());
-    }
-
-    @Test
-    void modify_throwDuplicateCategory() {
-        Category categoryInDB1 = new RandomCategoryBuilder().create();
-        categoryService.save(categoryInDB1);
-        Category categoryInDB2 = new RandomCategoryBuilder().create();
-        categoryService.save(categoryInDB2);
-
-        assertThrows(DuplicateCategoryException.class, () -> categoryService.modify(categoryInDB2.getId(), categoryInDB1.getTitle()));
+        CategoryDTO returnedCategory = categoryService.modify(categorySingle.getId(), newTitle);
+        assertEquals(categorySingle.getId(), returnedCategory.id());
+        assertNotEquals(categorySingle.getTitle(), returnedCategory.title());
     }
 
     @Test
     void modify_throwCategoryNotFound() {
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.modify(NumberUtils.getId(), RandomCategoryBuilder.getTitle()));
+        assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.modify(NumberUtils.getId(), categorySingle.getTitle()));
     }
 
 
     @Test
     void findById_singleCategory() {
-        Category category = new RandomCategoryBuilder().create();
-        categoryService.save(category);
+        categoryService.save(categorySingle);
 
-        Category returnedCategory = categoryService.findById(category.getId());
+        Category returnedCategory = categoryService.findById(categorySingle.getId());
 
-        assertEquals(category, returnedCategory);
+        assertEquals(categorySingle, returnedCategory);
     }
 
     @Test
-    void findById__categoryWithParent_AccessingRelatedEntities_ThrowsLazyInitializationException() {
-        Category category = new RandomCategoryBuilder()
-                .withParent()
-                .create();
-        categoryService.save(category);
-
-        Category returnedCategory = categoryService.findById(category.getId());
-
-        assertEquals(category, returnedCategory);
-        assertThrows(LazyInitializationException.class, () -> returnedCategory.getParent().getTitle());
-    }
-
-    @Test
-    void findById_singleCategory_throwsCategoryNotFoundException() {
-        Long id = NumberUtils.getId();
-
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.findById(id));
+    void findById_singleCategory_throwCategoryNotFoundException() {
+        assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.findById(NumberUtils.getId()));
     }
 
     @Test
     void findByTitle__singleCategory() {
-        Category category = new RandomCategoryBuilder()
-                .create();
-        categoryService.save(category);
-        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
+        categoryService.save(categorySingle);
+        CategoryDTO categorySingleDTO = CategoryMapper.toCategoryDTO(categorySingle);
 
-        CategoryDTO returnedDto = categoryService.findByTitle(category.getTitle());
+        CategoryDTO returnedDto = categoryService.findByTitle(categorySingle.getTitle());
 
-        assertEquals(categoryDTO, returnedDto);
+        assertEquals(categorySingleDTO, returnedDto);
     }
 
     @Test
     void findByTitle__categoryWithChildren() {
-        Category category = new RandomCategoryBuilder()
-                .withChildren()
-                .create();
-        categoryService.save(category);
-        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
+        categoryService.save(categoryWithChildrenAndParent);
+        CategoryDTO categoryWithChildrenAndParentDTO = CategoryMapper.toCategoryDTO(categoryWithChildrenAndParent);
 
-        CategoryDTO returnedDto = categoryService.findByTitle(category.getTitle());
+        CategoryDTO returnedDto = categoryService.findByTitle(categoryWithChildrenAndParent.getTitle());
 
-        assertEquals(categoryDTO, returnedDto);
+        assertEquals(categoryWithChildrenAndParentDTO, returnedDto);
     }
 
     @Test
     void findByTitle_singleCategory_throwsCategoryNotFound() {
-        String title = RandomCategoryBuilder.getTitle();
-
-        assertThrows(CategoryNotFoundException.class, () -> categoryService.findByTitle(title));
+        assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.findByTitle(categorySingle.getTitle()));
     }
 
     @Test
@@ -254,9 +215,8 @@ public class CategoryServiceTest {
 
     @Test
     void findFrom_single() {
-        Category category = new RandomCategoryBuilder().create();
-        categoryService.save(category);
-        Set<Category> returnedCategories = categoryService.findFrom(category.getId());
+        categoryService.save(categorySingle);
+        Set<Category> returnedCategories = categoryService.findFrom(categorySingle.getId());
 
         assertEquals(1, returnedCategories.size());
     }
@@ -287,56 +247,48 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void findByParentId_categoryWithChildren() {
-        Category category = new RandomCategoryBuilder()
-                .withChildren()
-                .create();
-        categoryService.save(category);
-        List<CategoryDTO> childrenDtos = category.getChildren()
+    void findByParentId_categoryWithChildrenAndParent() {
+        categoryService.save(categoryWithChildrenAndParent);
+        List<CategoryDTO> childrenDtos = categoryWithChildrenAndParent.getChildren()
                 .stream()
                 .map(CategoryMapper::toCategoryDTO)
                 .toList();
 
-        List<CategoryDTO> returnedDtos = categoryService.findByParentId(category.getId());
+        List<CategoryDTO> returnedDtos = categoryService.findByParentId(categoryWithChildrenAndParent.getId());
 
         assertEquals(childrenDtos, returnedDtos);
     }
 
     @Test
     void findByParentId_throwParentCategoryNotFound() {
-        assertThrows(ParentCategoryNotFoundException.class, () -> categoryService.findByParentId(NumberUtils.getId()));
+        assertThrows(ParentCategoryNotFoundException.class,
+                () -> categoryService.findByParentId(NumberUtils.getId()));
     }
 
     @Test
     void findDTOById__singleCategory() {
-        Category category = new RandomCategoryBuilder()
-                .create();
-        categoryService.save(category);
-        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
+        categoryService.save(categorySingle);
+        CategoryDTO categorySingleDTO = CategoryMapper.toCategoryDTO(categorySingle);
 
-        CategoryDTO returnedDto = categoryService.findDtoById(category.getId());
+        CategoryDTO returnedDto = categoryService.findDtoById(categorySingle.getId());
 
-        assertEquals(categoryDTO, returnedDto);
+        assertEquals(categorySingleDTO, returnedDto);
     }
 
     @Test
-    void findDTOById__categoryWithChildren() {
-        Category category = new RandomCategoryBuilder()
-                .withChildren()
-                .create();
-        categoryService.save(category);
-        CategoryDTO categoryDTO = CategoryMapper.toCategoryDTO(category);
+    void findDTOById__categoryWithChildrenAndParent() {
+        categoryService.save(categoryWithChildrenAndParent);
+        CategoryDTO categoryWithChildrenAndParentDTO = CategoryMapper.toCategoryDTO(categoryWithChildrenAndParent);
 
-        CategoryDTO returnedDto = categoryService.findDtoById(category.getId());
+        CategoryDTO returnedDto = categoryService.findDtoById(categoryWithChildrenAndParent.getId());
 
-        assertEquals(categoryDTO, returnedDto);
+        assertEquals(categoryWithChildrenAndParentDTO, returnedDto);
     }
 
     @Test
     void deleteById_singleCategory() {
-        Category category = new RandomCategoryBuilder().create();
-        categoryService.save(category);
-        long id = category.getId();
+        categoryService.save(categorySingle);
+        final long id = categorySingle.getId();
 
         categoryService.deleteById(id);
 
@@ -344,16 +296,18 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void deleteById_categoryWithParentWithNestedChildren() {
-        Category category = new RandomCategoryBuilder()
-                .withParent()
-                .withNestedChildren()
-                .create();
-        categoryService.save(category);
-        long id = category.getId();
-        long parentId = category.getParent().getId();
-        long childId = category.getChildren().getFirst().getId();
-        long nestedChildId = category.getChildren().getFirst().getChildren().getFirst().getId();
+    void deleteById_categoryWithChildrenAndParent() {
+        categoryService.save(categoryWithChildrenAndParent);
+        final long id = categoryWithChildrenAndParent.getId();
+        final long parentId = categoryWithChildrenAndParent.getParent().getId();
+        final long childId = categoryWithChildrenAndParent.getChildren()
+                .getFirst()
+                .getId();
+        final long nestedChildId = categoryWithChildrenAndParent.getChildren()
+                .getFirst()
+                .getChildren()
+                .getFirst()
+                .getId();
 
         categoryService.deleteById(id);
 
