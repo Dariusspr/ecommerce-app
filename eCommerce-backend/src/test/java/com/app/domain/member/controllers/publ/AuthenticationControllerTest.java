@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import static org.mockito.BDDMockito.given;
 
 @WebMvcTest(controllers = AuthenticationController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationControllerTest {
 
@@ -52,14 +54,14 @@ public class AuthenticationControllerTest {
     @MockBean
     private JwtService jwtService;
 
-    private static Member member;
-    private static NewMemberRequest newMemberRequest;
-    private static AuthenticationRequest authRequest;
-    private static String authRequestJson;
-    private static String newMemberRequestJson;
+    private Member member;
+    private NewMemberRequest newMemberRequest;
+    private AuthenticationRequest authRequest;
+    private String authRequestJson;
+    private String newMemberRequestJson;
 
     @BeforeAll
-    static void setupMember() throws JsonProcessingException {
+    void setupMember() throws JsonProcessingException {
         member = new RandomMemberBuilder().withId().create();
         newMemberRequest = new NewMemberRequest(
                 member.getUsername(),

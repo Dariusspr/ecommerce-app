@@ -83,14 +83,7 @@ public class MemberControllerTest {
     @Test
     void getMembersByUsernames_returnOk() throws Exception {
         final int memberCount = 2;
-        final List<Member> memberList = new RandomMemberBuilder().withId().create(memberCount);
-        final List<MemberSummaryDTO> memberSummaryDTOS = memberList.stream()
-                .map(MemberMapper::toMemberSummaryDTO)
-                .toList();
-        final Page<MemberSummaryDTO> memberSummaryDTOPage = new PageImpl<>(
-                memberSummaryDTOS,
-                PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE),
-                memberSummaryDTOS.size());
+        final Page<MemberSummaryDTO> memberSummaryDTOPage = getMemberSummaryPage(memberCount);
         String username = RandomMemberBuilder.getUsername();
         given(memberService.findAllSummariesByUsername(username, pageable))
                 .willReturn(memberSummaryDTOPage);
@@ -107,14 +100,7 @@ public class MemberControllerTest {
     @Test
     void getMembersByUsernames_noPageNumber_returnOk() throws Exception {
         final int memberCount = 2;
-        final List<Member> memberList = new RandomMemberBuilder().withId().create(memberCount);
-        final List<MemberSummaryDTO> memberSummaryDTOS = memberList.stream()
-                .map(MemberMapper::toMemberSummaryDTO)
-                .toList();
-        final Page<MemberSummaryDTO> memberSummaryDTOPage = new PageImpl<>(
-                memberSummaryDTOS,
-                PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE),
-                memberSummaryDTOS.size());
+        final Page<MemberSummaryDTO> memberSummaryDTOPage = getMemberSummaryPage(memberCount);
         String username = RandomMemberBuilder.getUsername();
         given(memberService.findAllSummariesByUsername(username, pageable))
                 .willReturn(memberSummaryDTOPage);
@@ -125,6 +111,7 @@ public class MemberControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content.size()", is(memberCount)));
     }
+
 
     @Test
     void getMembersByUsernames_returnNotFound() throws Exception {
@@ -137,5 +124,16 @@ public class MemberControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(ExceptionMessages.MEMBER_NOT_FOUND_MESSAGE)));
+    }
+
+    private Page<MemberSummaryDTO> getMemberSummaryPage(int memberCount) {
+        final List<Member> memberList = new RandomMemberBuilder().withId().create(memberCount);
+        final List<MemberSummaryDTO> memberSummaryDTOS = memberList.stream()
+                .map(MemberMapper::toMemberSummaryDTO)
+                .toList();
+        return new PageImpl<>(
+                memberSummaryDTOS,
+                PageRequest.of(PAGE_NUMBER_0, PAGE_SIZE),
+                memberSummaryDTOS.size());
     }
 }
