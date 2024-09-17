@@ -9,8 +9,10 @@ import com.app.domain.cart.exceptions.CartNotFoundException;
 import com.app.domain.cart.repositories.CartItemRepository;
 import com.app.domain.cart.repositories.CartRepository;
 import com.app.domain.item.entities.Item;
+import com.app.domain.item.repositories.ItemRepository;
 import com.app.domain.item.services.ItemService;
 import com.app.domain.member.entities.Member;
+import com.app.domain.member.repositories.MemberRepository;
 import com.app.domain.member.services.MemberService;
 import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.domain.member.RandomMemberBuilder;
@@ -42,15 +44,19 @@ public class CartServiceTest {
     @Autowired
     private MemberService memberService;
     @Autowired
-    private CartRepository cartRepository;
+    private MemberRepository memberRepository;
     @Autowired
     private CartService cartService;
+    @Autowired
+    private CartRepository cartRepository;
     @Autowired
     private CartItemService cartItemService;
     @Autowired
     private CartItemRepository cartItemRepository;
     @Autowired
     private ItemService itemService;
+    @Autowired
+    private ItemRepository itemRepository;
 
     @MockBean
     private Authentication authentication;
@@ -65,6 +71,11 @@ public class CartServiceTest {
         memberService.save(member);
     }
 
+    @AfterAll
+    void finalClear() {
+        memberRepository.deleteAll();
+    }
+
     @BeforeEach
     void mockAuthentication() {
         SecurityContextHolder.setContext(securityContext);
@@ -74,8 +85,9 @@ public class CartServiceTest {
 
     @AfterEach
     void clear() {
-        cartRepository.deleteAll();
         cartItemRepository.deleteAll();
+        itemRepository.deleteAll();
+        cartRepository.deleteAll();
     }
 
     @Test

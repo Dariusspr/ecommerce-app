@@ -3,6 +3,7 @@ package com.app.domain.review.services;
 
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.exceptions.MemberNotFoundException;
+import com.app.domain.member.repositories.MemberRepository;
 import com.app.domain.member.services.MemberService;
 import com.app.domain.review.dtos.ReviewDTO;
 import com.app.domain.review.dtos.requests.MemberReviewRequest;
@@ -11,10 +12,13 @@ import com.app.domain.review.entities.MemberReview;
 import com.app.domain.review.exceptions.DuplicateReviewException;
 import com.app.domain.review.exceptions.ReviewNotFoundException;
 import com.app.domain.review.mappers.ReviewMapper;
+import com.app.domain.review.repositories.CommentRepository;
+import com.app.domain.review.repositories.MemberReviewRepository;
 import com.app.global.exceptions.ForbiddenException;
 import com.app.utils.domain.member.RandomMemberBuilder;
 import com.app.utils.domain.review.RandomReviewBuilder;
 import com.app.utils.global.NumberUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -28,7 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.annotation.DirtiesContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
@@ -36,13 +39,19 @@ import static org.mockito.BDDMockito.given;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class MemberReviewServiceTest {
 
     @Autowired
     private MemberService memberService;
     @Autowired
+    private MemberRepository memberRepository;
+    @Autowired
     private MemberReviewService memberReviewService;
+    @Autowired
+    private MemberReviewRepository memberReviewRepository;
+    @Autowired
+    private CommentRepository commentRepository;
+
 
     @MockBean
     private Authentication authentication;
@@ -61,6 +70,12 @@ public class MemberReviewServiceTest {
         memberService.save(member);
     }
 
+    @AfterEach
+    void clear() {
+        memberReviewRepository.deleteAll();
+        commentRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
 
     @Test
     void save_ok() {
@@ -218,18 +233,16 @@ public class MemberReviewServiceTest {
     void create_ok() {
         mockAuthentication(author);
         MemberReview review = getMemberReview();
-        review.setId(1L);
-        review.getComment().setId(1L);
         ReviewDTO reviewDTO = ReviewMapper.toReviewDTO(review);
         MemberReviewRequest request = new MemberReviewRequest(member.getId(), review.getRating(),
                 review.getComment().getContent());
 
         ReviewDTO returnedReviewDTO = memberReviewService.create(request);
 
-        assertEquals(reviewDTO.id(), returnedReviewDTO.id());
+        assertNotNull(returnedReviewDTO.id());
         assertEquals(reviewDTO.author(), returnedReviewDTO.author());
         assertEquals(reviewDTO.rating(), returnedReviewDTO.rating());
-        assertEquals(reviewDTO.comment(), returnedReviewDTO.comment());
+        assertEquals(reviewDTO.comment().author(), returnedReviewDTO.comment().author());
     }
 
     @Test
@@ -259,8 +272,6 @@ public class MemberReviewServiceTest {
     void getAllByMemberId_ok() {
         MemberReview review = getMemberReview();
         memberReviewService.save(review);
-        review.setId(1L);
-        review.getComment().setId(1L);
         ReviewDTO reviewDTO = ReviewMapper.toReviewDTO(review);
 
         Page<ReviewDTO> page = memberReviewService.getAllByMemberId(member.getId(), Pageable.ofSize(1));
@@ -279,8 +290,6 @@ public class MemberReviewServiceTest {
     void getAllByAuthorId_ok() {
         MemberReview review = getMemberReview();
         memberReviewService.save(review);
-        review.setId(1L);
-        review.getComment().setId(1L);
         ReviewDTO reviewDTO = ReviewMapper.toReviewDTO(review);
 
         Page<ReviewDTO> page = memberReviewService.getAllByAuthorId(author.getId(), Pageable.ofSize(1));

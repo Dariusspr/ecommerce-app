@@ -2,6 +2,7 @@ package com.app.domain.review.services;
 
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.exceptions.MemberNotFoundException;
+import com.app.domain.member.repositories.MemberRepository;
 import com.app.domain.member.services.MemberService;
 import com.app.domain.review.dtos.CommentReactionsInfoDTO;
 import com.app.domain.review.dtos.requests.CommentReactionRequest;
@@ -11,6 +12,8 @@ import com.app.domain.review.enums.ReactionType;
 import com.app.domain.review.exceptions.CommentNotFoundException;
 import com.app.domain.review.exceptions.CommentReactionNotFoundException;
 import com.app.domain.review.exceptions.DuplicateCommentReactionException;
+import com.app.domain.review.repositories.CommentReactionRepository;
+import com.app.domain.review.repositories.CommentRepository;
 import com.app.global.exceptions.ForbiddenException;
 import com.app.utils.domain.member.RandomMemberBuilder;
 import com.app.utils.domain.review.RandomCommentBuilder;
@@ -25,7 +28,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.List;
 
@@ -36,15 +38,20 @@ import static org.mockito.BDDMockito.given;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class CommentReactionServiceTest {
 
     @Autowired
     private CommentService commentService;
     @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
     private MemberService memberService;
     @Autowired
+    private MemberRepository memberRepository;
+    @Autowired
     CommentReactionService commentReactionService;
+    @Autowired
+    CommentReactionRepository commentReactionRepository;
 
     @MockBean
     private Authentication authentication;
@@ -66,6 +73,13 @@ public class CommentReactionServiceTest {
         reaction = new RandomCommentReactionBuilder()
                 .withCustomAuthor(author)
                 .withCustomComment(comment).create();
+    }
+
+    @AfterEach
+    void clear() {
+        commentReactionRepository.deleteAll();
+        commentRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @Test

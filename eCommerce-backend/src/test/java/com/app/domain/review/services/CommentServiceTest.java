@@ -2,6 +2,7 @@ package com.app.domain.review.services;
 
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.exceptions.MemberNotFoundException;
+import com.app.domain.member.repositories.MemberRepository;
 import com.app.domain.member.services.MemberService;
 import com.app.domain.review.dtos.CommentDTO;
 import com.app.domain.review.dtos.requests.CommentRequest;
@@ -9,10 +10,12 @@ import com.app.domain.review.entities.Comment;
 import com.app.domain.review.exceptions.CommentNotFoundException;
 import com.app.domain.review.exceptions.ParentCommentNotFoundException;
 import com.app.domain.review.mappers.CommentMapper;
+import com.app.domain.review.repositories.CommentRepository;
 import com.app.global.exceptions.ForbiddenException;
 import com.app.utils.domain.member.RandomMemberBuilder;
 import com.app.utils.domain.review.RandomCommentBuilder;
 import com.app.utils.global.NumberUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -27,7 +30,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.List;
 
@@ -36,16 +38,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 public class CommentServiceTest {
 
     @Autowired
     private CommentService commentService;
-
+    @Autowired
+    private CommentRepository commentRepository;
     @Autowired
     private MemberService memberService;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @MockBean
     private Authentication authentication;
@@ -58,6 +62,12 @@ public class CommentServiceTest {
     void setupAuthor() {
         author = new RandomMemberBuilder().create();
         memberService.save(author);
+    }
+
+    @AfterEach
+    void clear() {
+        commentRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @Test

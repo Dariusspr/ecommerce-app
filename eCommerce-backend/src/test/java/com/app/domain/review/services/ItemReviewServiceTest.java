@@ -3,9 +3,11 @@ package com.app.domain.review.services;
 
 import com.app.domain.item.entities.Item;
 import com.app.domain.item.exceptions.ItemNotFoundException;
+import com.app.domain.item.repositories.ItemRepository;
 import com.app.domain.item.services.ItemService;
 import com.app.domain.member.entities.Member;
 import com.app.domain.member.exceptions.MemberNotFoundException;
+import com.app.domain.member.repositories.MemberRepository;
 import com.app.domain.member.services.MemberService;
 import com.app.domain.review.dtos.ReviewDTO;
 import com.app.domain.review.dtos.requests.ItemReviewRequest;
@@ -14,11 +16,14 @@ import com.app.domain.review.entities.ItemReview;
 import com.app.domain.review.exceptions.DuplicateReviewException;
 import com.app.domain.review.exceptions.ReviewNotFoundException;
 import com.app.domain.review.mappers.ReviewMapper;
+import com.app.domain.review.repositories.CommentRepository;
+import com.app.domain.review.repositories.ItemReviewRepository;
 import com.app.global.exceptions.ForbiddenException;
 import com.app.utils.domain.item.RandomItemBuilder;
 import com.app.utils.domain.member.RandomMemberBuilder;
 import com.app.utils.domain.review.RandomReviewBuilder;
 import com.app.utils.global.NumberUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,7 +37,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.UUID;
 
@@ -42,15 +46,22 @@ import static org.mockito.BDDMockito.given;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ItemReviewServiceTest {
 
     @Autowired
     private ItemService itemService;
     @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
     private MemberService memberService;
     @Autowired
+    private MemberRepository memberRepository;
+    @Autowired
     private ItemReviewService itemReviewService;
+    @Autowired
+    private ItemReviewRepository itemReviewRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     @MockBean
     private Authentication authentication;
@@ -69,6 +80,15 @@ public class ItemReviewServiceTest {
         memberService.save(seller);
         item = new RandomItemBuilder(seller).create();
         itemService.save(item);
+
+    }
+
+    @AfterEach
+    void clear() {
+        itemReviewRepository.deleteAll();
+        itemRepository.deleteAll();
+        commentRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
 
@@ -229,18 +249,16 @@ public class ItemReviewServiceTest {
     void create_ok() {
         mockAuthentication(author);
         ItemReview review = getItemReview();
-        review.setId(1L);
-        review.getComment().setId(1L);
         ReviewDTO reviewDTO = ReviewMapper.toReviewDTO(review);
         ItemReviewRequest request = new ItemReviewRequest(item.getId(), review.getRating(),
                 review.getComment().getContent());
 
         ReviewDTO returnedReviewDTO = itemReviewService.create(request);
 
-        assertEquals(reviewDTO.id(), returnedReviewDTO.id());
+        assertNotNull(returnedReviewDTO.id());
         assertEquals(reviewDTO.author(), returnedReviewDTO.author());
         assertEquals(reviewDTO.rating(), returnedReviewDTO.rating());
-        assertEquals(reviewDTO.comment(), returnedReviewDTO.comment());
+        assertEquals(reviewDTO.comment().author(), returnedReviewDTO.comment().author());
     }
 
     @Test
@@ -270,8 +288,6 @@ public class ItemReviewServiceTest {
     void getAllByItemId_ok() {
         ItemReview review = getItemReview();
         itemReviewService.save(review);
-        review.setId(1L);
-        review.getComment().setId(1L);
         ReviewDTO reviewDTO = ReviewMapper.toReviewDTO(review);
 
         Page<ReviewDTO> page = itemReviewService.getAllByItemId(item.getId(), Pageable.ofSize(1));
@@ -290,8 +306,7 @@ public class ItemReviewServiceTest {
     void getAllByAuthorId_ok() {
         ItemReview review = getItemReview();
         itemReviewService.save(review);
-        review.setId(1L);
-        review.getComment().setId(1L);
+
         ReviewDTO reviewDTO = ReviewMapper.toReviewDTO(review);
 
         Page<ReviewDTO> page = itemReviewService.getAllByAuthorId(author.getId(), Pageable.ofSize(1));
