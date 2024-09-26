@@ -26,20 +26,22 @@ public class CartService {
         this.memberService = memberService;
     }
 
-    public CartDTO getActiveCartDto() {
-        return CartMapper.toCartDto(getActiveCart());
+    public CartDTO getCartDto() {
+        return CartMapper.toCartDto(getCart());
     }
 
+    // Note: many-to-one relationship with Member, but for now cart is like a singleton.
+    // If one was created, the same one is always returned.
+    // Extend this later to support multiple carts with distinct states or just make it one-to-one
     @Transactional
-    public Cart getActiveCart() {
+    public Cart getCart() {
         Member owner = AuthUtils.getAuthenticated();
-        Optional<Cart> currentCart = findActiveByOwner(owner);
-        return currentCart
-                .orElseGet(this::create);
+        Optional<Cart> currentCart = findByOwner(owner);
+        return currentCart.orElseGet(this::create);
     }
 
-    private Optional<Cart> findActiveByOwner(Member owner) {
-        return cartRepository.findActiveByOwner(owner);
+    private Optional<Cart> findByOwner(Member owner) {
+        return cartRepository.findByOwner(owner);
     }
 
     protected Cart create() {
@@ -64,12 +66,6 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-
-//    public Cart setInactive(Cart cart) {
-//        cart.setActive(false);
-//        cartRepository.save(cart);
-//        return cart;
-//    }
 
     @Transactional
     public void deleteById(UUID id) {

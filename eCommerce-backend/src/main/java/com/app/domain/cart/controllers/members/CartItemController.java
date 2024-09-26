@@ -54,6 +54,6 @@ public class CartItemController {
 
     @DeleteMapping
     public ResponseEntity<CartDTO> clearActiveCart() {
-        return ResponseEntity.ok((cartItemService.clearActive()));
+        return ResponseEntity.ok((cartItemService.clear()));
     }
 }

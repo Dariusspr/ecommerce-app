@@ -62,9 +62,8 @@ public class CartItemControllerTest {
         itemRequest = new CartItemRequest(item.getId(), 1);
         CartItemDTO cartItemDTO = new CartItemDTO(1L,
                 ItemMapper.toItemSummaryDTO(item),
-                item.getQuantity(),
-                item.getPrice());
-        cartDTO = new CartDTO(UUID.randomUUID(), List.of(cartItemDTO), cartItemDTO.pricePerUnit());
+                item.getQuantity());
+        cartDTO = new CartDTO(UUID.randomUUID(), List.of(cartItemDTO), cartItemDTO.itemSummary().price());
         itemRequestJson = StringUtils.toJSON(itemRequest);
     }
 
@@ -151,7 +150,7 @@ public class CartItemControllerTest {
 
     @Test
     void clearActiveCart_ok() throws Exception {
-        given(cartItemService.clearActive()).willReturn(cartDTO);
+        given(cartItemService.clear()).willReturn(cartDTO);
 
         mockMvc.perform(delete(CartItemController.BASE_URL))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

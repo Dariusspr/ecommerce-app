@@ -14,7 +14,6 @@ public class CartItemMapper {
         return new CartItemDTO(
                 cartItem.getId(),
                 itemSummary,
-                cartItem.getQuantity(),
-                cartItem.getPricePerUnit());
+                cartItem.getQuantity());
     }
 }

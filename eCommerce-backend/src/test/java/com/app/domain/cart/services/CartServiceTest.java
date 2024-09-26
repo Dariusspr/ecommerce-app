@@ -91,44 +91,29 @@ public class CartServiceTest {
     }
 
     @Test
-    void getActiveCart_create() {
-        Cart cart = cartService.getActiveCart();
+    void getCart_create() {
+        Cart cart = cartService.getCart();
 
         assertNotNull(cart.getOwner());
         assertEquals(BigDecimal.ZERO, cart.getTotalCost().setScale(0));
-        assertTrue(cart.isActive());
     }
 
     @Test
     @Transactional
-    void getActiveCart_returnOld() {
-        Cart old = createAndSaveCartWithItem(true);
+    void getCart_returnOld() {
+        Cart old = createAndSaveCartWithItem();
 
-        Cart oldCart = cartService.getActiveCart();
+        Cart oldCart = cartService.getCart();
 
         List<CartItem> oldItems = old.getCartItems();
         List<CartItem> returnedItems = oldCart.getCartItems();
         assertNotNull(oldCart.getOwner());
         assertEquals(oldItems.size(), returnedItems.size());
-        assertTrue(oldCart.isActive());
     }
 
     @Test
-    void getActiveCart_oldInactive_returnNew() {
-        Cart old = createAndSaveCartWithItem(false);
-
-        Cart newCart = cartService.getActiveCart();
-
-        List<CartItem> oldItems = old.getCartItems();
-        List<CartItem> returnedItems = newCart.getCartItems();
-        assertNotNull(newCart.getOwner());
-        assertNotEquals(oldItems.size(), returnedItems.size());
-        assertTrue(newCart.isActive());
-    }
-
-    @Test
-    void getActiveCartDto() {
-        CartDTO cartDTO = cartService.getActiveCartDto();
+    void getCartDto() {
+        CartDTO cartDTO = cartService.getCartDto();
 
         assertNotNull(cartDTO.cartId());
         assertEquals(Collections.emptyList(), cartDTO.items());
@@ -136,7 +121,7 @@ public class CartServiceTest {
     }
 
     @Test
-    void getActiveCartDto_withItems() {
+    void getCartDto_withItems() {
         Item item2 = createItem(1);
         Item item1 = createItem(2);
 
@@ -145,7 +130,7 @@ public class CartServiceTest {
         request = new CartItemRequest(item2.getId(), 1);
         cartItemService.addItemToCart(request);
 
-        CartDTO cartDTO = cartService.getActiveCartDto();
+        CartDTO cartDTO = cartService.getCartDto();
 
         assertNotNull(cartDTO.cartId());
         assertEquals(2, cartDTO.items().size());
@@ -156,12 +141,11 @@ public class CartServiceTest {
 
     @Test
     void findById_ok() {
-        Cart oldCart = cartService.getActiveCart();
+        Cart oldCart = cartService.getCart();
         Cart returnedCart = cartService.findById(oldCart.getId());
 
         assertNotNull(returnedCart.getOwner());
         assertEquals(BigDecimal.ZERO, returnedCart.getTotalCost().setScale(0));
-        assertTrue(returnedCart.isActive());
     }
 
     @Test
@@ -172,7 +156,7 @@ public class CartServiceTest {
 
     @Test
     void findDtoById_ok() {
-        Cart oldCart = cartService.getActiveCart();
+        Cart oldCart = cartService.getCart();
         CartDTO returnedCart = cartService.findDtoById(oldCart.getId());
 
         assertNotNull(returnedCart.cartId());
@@ -181,7 +165,7 @@ public class CartServiceTest {
 
     @Test
     void deleteById_ok() {
-        Cart cart = cartService.getActiveCart();
+        Cart cart = cartService.getCart();
 
         assertDoesNotThrow(() -> cartService.deleteById(cart.getId()));
         assertThrows(CartNotFoundException.class,
@@ -190,19 +174,18 @@ public class CartServiceTest {
 
     @Test
     void deleteByOwner_ok() {
-        Cart cart = cartService.getActiveCart();
+        Cart cart = cartService.getCart();
 
         assertDoesNotThrow(() -> cartService.deleteByOwner(cart.getOwner().getId()));
         assertThrows(CartNotFoundException.class,
                 () -> cartService.findById(cart.getId()));
     }
 
-    private Cart createAndSaveCartWithItem(boolean isActive) {
-        Cart cart = cartService.getActiveCart();
+    private Cart createAndSaveCartWithItem() {
+        Cart cart = cartService.getCart();
         Item item = createItem(1);
-        CartItem cartItem = new CartItem(item, 1, item.getPrice());
+        CartItem cartItem = new CartItem(item, 1);
         cart.addItem(cartItem);
-        cart.setActive(isActive);
         cartService.save(cart);
         return cart;
     }

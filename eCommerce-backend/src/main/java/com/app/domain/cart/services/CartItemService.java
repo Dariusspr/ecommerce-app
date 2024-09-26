@@ -33,32 +33,32 @@ public class CartItemService {
 
     @Transactional
     public CartDTO addItemToCart(CartItemRequest request) {
-        Cart currentCart = cartService.getActiveCart();
+        Cart currentCart = cartService.getCart();
         Item item = itemService.findByIdWithLock(request.itemId());
-        Optional<CartItem> existingItem = findCartItem(currentCart, item.getId());
+        Optional<CartItem> existingCartItem = findCartItem(currentCart, item.getId());
 
-        int totalQuantity = getTotalQuantity(existingItem, request.quantity());
+        int totalQuantity = getTotalQuantity(existingCartItem, request.quantity());
         if (item.getQuantity() < totalQuantity) {
             throw new InsufficientStockException();
         }
 
-        addOrUpdateCartItem(item, existingItem, totalQuantity, currentCart);
+        addOrUpdateCartItem(item, existingCartItem, totalQuantity, currentCart);
         cartService.save(currentCart);
         return CartMapper.toCartDto(currentCart);
     }
 
-    private void addOrUpdateCartItem(Item item, Optional<CartItem> existingItem, int totalQuantity, Cart currentCart) {
-        if (existingItem.isPresent()) {
-            CartItem cartItem = existingItem.get();
+    private void addOrUpdateCartItem(Item item, Optional<CartItem> existingCartItem, int totalQuantity, Cart currentCart) {
+        if (existingCartItem.isPresent()) {
+            CartItem cartItem = existingCartItem.get();
             cartItem.setQuantity(totalQuantity);
         } else {
-            CartItem cartItem = new CartItem(item, totalQuantity, item.getPrice());
+            CartItem cartItem = new CartItem(item, totalQuantity);
             currentCart.addItem(cartItem);
         }
     }
 
     private int getTotalQuantity(Optional<CartItem> existingItem, int quantity) {
-        return existingItem.map(value -> value.getQuantity() + quantity)
+        return existingItem.map(ei -> ei.getQuantity() + quantity)
                 .orElse(quantity);
     }
 
@@ -74,13 +74,13 @@ public class CartItemService {
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
 
-        return CartMapper.toCartDto(cartService.getActiveCart());
+        return CartMapper.toCartDto(cartService.getCart());
     }
 
 
     @Transactional
     public CartDTO removeItemFromCart(Long id) {
-        Cart currentCart = cartService.getActiveCart();
+        Cart currentCart = cartService.getCart();
 
         CartItem cartItem = findById(id);
         currentCart.removeItem(cartItem);
@@ -90,8 +90,8 @@ public class CartItemService {
     }
 
     @Transactional
-    public CartDTO clearActive() {
-        Cart currentCart = cartService.getActiveCart();
+    public CartDTO clear() {
+        Cart currentCart = cartService.getCart();
 
         cartItemRepository.deleteAllByCart(currentCart);
         currentCart.setCartItems(new ArrayList<>());

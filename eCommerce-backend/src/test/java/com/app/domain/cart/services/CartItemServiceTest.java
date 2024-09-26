@@ -61,7 +61,6 @@ public class CartItemServiceTest {
     private SecurityContext securityContext;
 
     private Member member;
-    private Cart cart;
     private Item item;
 
     @BeforeAll
@@ -69,7 +68,7 @@ public class CartItemServiceTest {
         member = new RandomMemberBuilder().create();
         memberService.save(member);
 
-        cart = new Cart(member);
+        Cart cart = new Cart(member);
         cartService.save(cart);
 
         item = createItem(5);
@@ -171,7 +170,7 @@ public class CartItemServiceTest {
     }
 
     @Test
-    void clearActive_ok() {
+    void clear_ok() {
         Item item2 = createItem(1);
         Item item3 = createItem(1);
         CartItemRequest request = new CartItemRequest(item.getId(), 1);
@@ -182,7 +181,7 @@ public class CartItemServiceTest {
         CartDTO cart = cartItemService.addItemToCart(request);
 
         assertEquals(3, cart.items().size());
-        CartDTO updatedCart = cartItemService.clearActive();
+        CartDTO updatedCart = cartItemService.clear();
         assertEquals(0, updatedCart.items().size());
     }
 

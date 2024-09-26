@@ -30,22 +30,16 @@ public class CartItem {
     @Column(name = "cart_item_quantity")
     private int quantity;
 
-    @NotNull
-    @PositiveOrZero
-    @Column(name = "cart_item_price")
-    private BigDecimal pricePerUnit;
-
     protected CartItem() {
     }
 
-    public CartItem(Item item, int quantity, BigDecimal pricePerUnit) {
+    public CartItem(Item item, int quantity) {
         this.item = item;
         this.quantity = quantity;
-        this.pricePerUnit = pricePerUnit;
     }
 
     public BigDecimal getTotalPrice() {
-        return pricePerUnit.multiply(BigDecimal.valueOf(quantity));
+        return item.getPrice().multiply(BigDecimal.valueOf(quantity));
     }
 
     // AUTO GENERATED
@@ -80,13 +74,5 @@ public class CartItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-    }
-
-    public BigDecimal getPricePerUnit() {
-        return pricePerUnit;
-    }
-
-    public void setPricePerUnit(BigDecimal pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
     }
 }

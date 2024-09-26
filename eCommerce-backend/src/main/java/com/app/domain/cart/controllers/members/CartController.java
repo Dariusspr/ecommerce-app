@@ -27,7 +27,7 @@ public class CartController {
 
     @GetMapping()
     public ResponseEntity<CartDTO> getActiveCart() {
-        return ResponseEntity.ok(cartService.getActiveCartDto());
+        return ResponseEntity.ok(cartService.getCartDto());
     }
 
     @GetMapping("/{id}")

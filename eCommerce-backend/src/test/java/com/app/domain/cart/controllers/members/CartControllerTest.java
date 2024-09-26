@@ -27,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 @WebMvcTest(controllers = CartController.class)
@@ -54,7 +53,7 @@ public class CartControllerTest {
 
     @Test
     void getActiveCart_ok() throws Exception {
-        given(cartService.getActiveCartDto()).willReturn(cartDTO);
+        given(cartService.getCartDto()).willReturn(cartDTO);
 
         mockMvc.perform(get(CartController.BASE_URL))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

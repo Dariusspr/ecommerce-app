@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CartRepository extends JpaRepository<Cart, UUID> {
-    @Query("SELECT c FROM Cart c WHERE c.owner = :owner AND c.active = true")
-    Optional<Cart> findActiveByOwner(@Param("owner") Member owner);
+    @Query("SELECT c FROM Cart c WHERE c.owner = :owner")
+    Optional<Cart> findByOwner(@Param("owner") Member owner);
 
     @Modifying
     @Query("DELETE FROM Cart c WHERE c.owner = :owner")

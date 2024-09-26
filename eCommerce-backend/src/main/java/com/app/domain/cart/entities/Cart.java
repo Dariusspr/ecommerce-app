@@ -34,9 +34,6 @@ public class Cart {
     @Column(name = "cart_total_cost")
     private BigDecimal totalCost = BigDecimal.ZERO;
 
-    @Column(name = "cart_active")
-    private boolean active = true;
-
     public Cart() {
     }
 
@@ -88,13 +85,5 @@ public class Cart {
 
     public void setTotalCost(BigDecimal totalCost) {
         this.totalCost = totalCost;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 }

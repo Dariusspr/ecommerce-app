@@ -7,6 +7,5 @@ import java.math.BigDecimal;
 public record CartItemDTO(
         Long cardId,
         ItemSummaryDTO itemSummary,
-        int quantity,
-        BigDecimal pricePerUnit) {
+        int quantity) {
 }
